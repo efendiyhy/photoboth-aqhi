@@ -1,0 +1,14 @@
+{
+  "name": "photoboth-aqhi",
+  "version": "1.0.0",
+  "description": "Photobooth web offline untuk Laboratorium AQHI (Air Quality Health Impact) - berjalan di Orange Pi",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "license": "MIT",
+  "private": true
+}

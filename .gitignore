@@ -1,0 +1,9 @@
+node_modules/
+certs/
+*.log
+.DS_Store
+__pycache__/
+*.pyc
+.env
+# Foto TIDAK disimpan di server; jaga-jaga bila ada ekspor manual
+photos/

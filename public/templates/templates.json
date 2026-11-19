@@ -1,0 +1,389 @@
+{
+  "version": 1,
+  "note": "Koordinat slot dalam piksel template (x, y, w, h). Ganti PNG + angka ini dengan hasil Figma.",
+  "templates": [
+    {
+      "id": "awan-ceria",
+      "name": "Awan Ceria",
+      "file": "awan-ceria.png",
+      "width": 600,
+      "height": 1800,
+      "format": "strip",
+      "color": "#4cc3f5",
+      "slots": [
+        {
+          "x": 40,
+          "y": 300,
+          "w": 520,
+          "h": 400,
+          "radius": 30
+        },
+        {
+          "x": 40,
+          "y": 750,
+          "w": 520,
+          "h": 400,
+          "radius": 30
+        },
+        {
+          "x": 40,
+          "y": 1200,
+          "w": 520,
+          "h": 400,
+          "radius": 30
+        }
+      ]
+    },
+    {
+      "id": "lab-buddies",
+      "name": "Lab Buddies",
+      "file": "lab-buddies.png",
+      "width": 600,
+      "height": 1800,
+      "format": "strip",
+      "color": "#2fc9b4",
+      "slots": [
+        {
+          "x": 40,
+          "y": 235,
+          "w": 520,
+          "h": 320,
+          "radius": 30
+        },
+        {
+          "x": 40,
+          "y": 591,
+          "w": 520,
+          "h": 320,
+          "radius": 30
+        },
+        {
+          "x": 40,
+          "y": 947,
+          "w": 520,
+          "h": 320,
+          "radius": 30
+        },
+        {
+          "x": 40,
+          "y": 1303,
+          "w": 520,
+          "h": 320,
+          "radius": 30
+        }
+      ]
+    },
+    {
+      "id": "paru-sehat",
+      "name": "Paru-paru Sehat",
+      "file": "paru-sehat.png",
+      "width": 1200,
+      "height": 1800,
+      "format": "4r",
+      "color": "#ff7fa3",
+      "slots": [
+        {
+          "x": 80,
+          "y": 330,
+          "w": 1040,
+          "h": 410,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 780,
+          "w": 1040,
+          "h": 410,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 1230,
+          "w": 1040,
+          "h": 410,
+          "radius": 44
+        }
+      ]
+    },
+    {
+      "id": "clean-air-club",
+      "name": "Clean Air Club",
+      "file": "clean-air-club.png",
+      "width": 1200,
+      "height": 1800,
+      "format": "4r",
+      "color": "#4cc98a",
+      "slots": [
+        {
+          "x": 80,
+          "y": 340,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 340,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 940,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 940,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        }
+      ]
+    },
+    {
+      "id": "aqhi-rainbow",
+      "name": "AQHI Rainbow",
+      "file": "aqhi-rainbow.png",
+      "width": 1200,
+      "height": 1800,
+      "format": "4r",
+      "color": "#ff9835",
+      "slots": [
+        {
+          "x": 80,
+          "y": 320,
+          "w": 1040,
+          "h": 470,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 830,
+          "w": 500,
+          "h": 400,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 830,
+          "w": 500,
+          "h": 400,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 1270,
+          "w": 500,
+          "h": 400,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 1270,
+          "w": 500,
+          "h": 400,
+          "radius": 44
+        }
+      ]
+    },
+    {
+      "id": "mask-hero",
+      "name": "Mask Hero",
+      "file": "mask-hero.png",
+      "width": 1200,
+      "height": 1200,
+      "format": "square",
+      "color": "#3fd6c4",
+      "slots": [
+        {
+          "x": 60,
+          "y": 240,
+          "w": 640,
+          "h": 760,
+          "radius": 40
+        },
+        {
+          "x": 740,
+          "y": 240,
+          "w": 400,
+          "h": 360,
+          "radius": 40
+        },
+        {
+          "x": 740,
+          "y": 640,
+          "w": 400,
+          "h": 360,
+          "radius": 40
+        }
+      ]
+    },
+    {
+      "id": "sunny-breeze",
+      "name": "Sunny Breeze",
+      "file": "sunny-breeze.png",
+      "width": 1200,
+      "height": 1200,
+      "format": "square",
+      "color": "#ffc21a",
+      "slots": [
+        {
+          "x": 60,
+          "y": 240,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        },
+        {
+          "x": 620,
+          "y": 240,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        },
+        {
+          "x": 60,
+          "y": 650,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        },
+        {
+          "x": 620,
+          "y": 650,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        }
+      ]
+    },
+    {
+      "id": "bubble-science",
+      "name": "Bubble Science",
+      "file": "bubble-science.png",
+      "width": 1200,
+      "height": 1200,
+      "format": "square",
+      "color": "#1fc4b0",
+      "slots": [
+        {
+          "x": 60,
+          "y": 215,
+          "w": 340,
+          "h": 300,
+          "radius": 36
+        },
+        {
+          "x": 430,
+          "y": 215,
+          "w": 340,
+          "h": 300,
+          "radius": 36
+        },
+        {
+          "x": 800,
+          "y": 215,
+          "w": 340,
+          "h": 300,
+          "radius": 36
+        },
+        {
+          "x": 60,
+          "y": 555,
+          "w": 520,
+          "h": 390,
+          "radius": 36
+        },
+        {
+          "x": 620,
+          "y": 555,
+          "w": 520,
+          "h": 390,
+          "radius": 36
+        }
+      ]
+    },
+    {
+      "id": "tree-power",
+      "name": "Tree Power",
+      "file": "tree-power.png",
+      "width": 600,
+      "height": 1800,
+      "format": "strip",
+      "color": "#35b873",
+      "slots": [
+        {
+          "x": 40,
+          "y": 235,
+          "w": 520,
+          "h": 320,
+          "radius": 30
+        },
+        {
+          "x": 40,
+          "y": 591,
+          "w": 520,
+          "h": 320,
+          "radius": 30
+        },
+        {
+          "x": 40,
+          "y": 947,
+          "w": 520,
+          "h": 320,
+          "radius": 30
+        },
+        {
+          "x": 40,
+          "y": 1303,
+          "w": 520,
+          "h": 320,
+          "radius": 30
+        }
+      ]
+    },
+    {
+      "id": "hujan-ceria",
+      "name": "Hujan Ceria",
+      "file": "hujan-ceria.png",
+      "width": 1200,
+      "height": 1800,
+      "format": "4r",
+      "color": "#5eb8ef",
+      "slots": [
+        {
+          "x": 80,
+          "y": 340,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 340,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 940,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 940,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        }
+      ]
+    }
+  ]
+}
