@@ -51,7 +51,8 @@ sed -i '/^HTTPS_PORT=/d' "$CFG"
 sed -e "s|__USER__|$RUN_USER|g" -e "s|__APP_DIR__|$APP_DIR|g" -e "s|__NODE__|$NODE_BIN|g" \
   "$APP_DIR/deploy/aqhi-photobooth.service" > /etc/systemd/system/aqhi-photobooth.service
 systemctl daemon-reload
-systemctl enable --now aqhi-photobooth.service
+systemctl enable aqhi-photobooth.service
+systemctl restart aqhi-photobooth.service
 sleep 1
 systemctl --no-pager --lines=5 status aqhi-photobooth.service || true
 
