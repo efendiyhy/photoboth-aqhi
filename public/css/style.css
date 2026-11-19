@@ -85,7 +85,6 @@ body {
 .flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
 .flash.go { animation: flash .35s ease-out; }
 @keyframes flash { 0% { opacity: .95; } 100% { opacity: 0; } }
-.cam-msg { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 18px; color: #fff; font-weight: 700; background: rgba(13,43,64,.85); }
 
 .thumbs { display: flex; gap: 8px; justify-content: center; margin: 14px 0 6px; flex-wrap: wrap; }
 .thumb { width: 54px; height: 54px; border-radius: 14px; border: 3px dashed var(--navy); background: rgba(255,255,255,.7); display: grid; place-items: center; font-weight: 900; overflow: hidden; }
@@ -93,7 +92,7 @@ body {
 .thumb.done { border-style: solid; }
 .thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-.controls { display: grid; gap: 12px; margin-top: 10px; }
+.controls { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 10px; }
 .controls .row { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
 .lbl { font-weight: 900; }
 .chips { display: flex; gap: 8px; }
@@ -114,3 +113,30 @@ body {
   .cam-box { width: min(100%, 60vh * 1.33); }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+
+/* kategori template */
+.cat-bar { position: sticky; top: 0; z-index: 4; display: flex; gap: 8px; overflow-x: auto; padding: 10px 2px; margin: 6px -2px 0; scrollbar-width: none; background: linear-gradient(180deg, rgba(143,216,255,.95), rgba(143,216,255,0)); }
+.cat-bar::-webkit-scrollbar { display: none; }
+.cat-chip { flex: 0 0 auto; font: inherit; font-weight: 800; font-size: 14px; border: 3px solid var(--navy); background: #fff; color: var(--navy); border-radius: 999px; padding: 7px 14px; cursor: pointer; box-shadow: 0 3px 0 var(--navy); white-space: nowrap; }
+.cat-chip.on { background: var(--sun); }
+.cat-chip small { opacity: .65; margin-left: 4px; font-weight: 700; }
+.cat-title { margin: 22px 4px 0; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+.cat-title small { font-weight: 700; opacity: .6; font-size: 13px; }
+.cat-section .grid { margin-top: 10px; }
+
+/* pesan kamera: kecil, tidak menutupi gambar */
+.cam-msg { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); max-width: calc(100% - 20px); padding: 7px 14px; border-radius: 999px; background: rgba(13,43,64,.72); color: #fff; font-size: 13px; font-weight: 700; text-align: center; pointer-events: none; z-index: 3; }
+.cam-msg[hidden] { display: none; }
+.cam-msg.err { bottom: auto; top: 10px; border-radius: 16px; background: rgba(176,40,40,.9); font-size: 14px; line-height: 1.35; }
+
+/* efek */
+.fx-wrap { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.fx-wrap.center { justify-content: center; flex-wrap: wrap; margin: 4px 0 12px; }
+.fx-chips { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 8px; scrollbar-width: none; flex: 1 1 auto; min-width: 0; }
+.fx-wrap.center .fx-chips { flex: 0 1 auto; max-width: 100%; }
+.fx-chips::-webkit-scrollbar { display: none; }
+.fx-chip { flex: 0 0 auto; font: inherit; font-weight: 800; font-size: 13px; border: 3px solid var(--navy); background: #fff; color: var(--navy); border-radius: 999px; padding: 6px 12px; cursor: pointer; box-shadow: 0 3px 0 var(--navy); white-space: nowrap; }
+.fx-chip.on { background: var(--sun); }
+
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
+.fx-wrap .lbl { flex: 0 0 auto; white-space: nowrap; }

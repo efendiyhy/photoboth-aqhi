@@ -17,6 +17,9 @@
     running: false,
     cancel: false,
     streamOk: false,
+    effect: 'none',
+    categories: [],
+    category: 'all',
     camCount: 1,
     camIndex: 0,
     resultBlob: null
@@ -48,30 +51,153 @@
     } catch (e) {}
   }
 
+  // ---------- efek foto ----------
+  // Semua efek memakai pixel-processing canvas (jalan di semua browser). Efek 'glow' butuh ctx.filter, hanya ditampilkan bila didukung.
+  function canvasFilterOk() {
+    try { var x = document.createElement('canvas').getContext('2d'); x.filter = 'blur(1px)'; return x.filter === 'blur(1px)'; } catch (e) { return false; }
+  }
+  var CSS_OK = !!(window.CSS && CSS.supports && CSS.supports('filter', 'grayscale(1)'));
+  function cl(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
+  function sat(r, g, b, k) { var l = 0.299 * r + 0.587 * g + 0.114 * b; return [l + (r - l) * k, l + (g - l) * k, l + (b - l) * k]; }
+  function con(v, k) { return (v - 128) * k + 128; }
+  function sepiaPx(r, g, b) { return [0.393 * r + 0.769 * g + 0.189 * b, 0.349 * r + 0.686 * g + 0.168 * b, 0.272 * r + 0.534 * g + 0.131 * b]; }
+
+  var EFFECTS = [
+    { id: 'none', name: 'Normal', emoji: '🌈', css: '' },
+    { id: 'bw', name: 'Hitam Putih', emoji: '🖤', css: 'grayscale(1) contrast(1.1)', px: function (r, g, b) { var l = 0.299 * r + 0.587 * g + 0.114 * b; l = con(l, 1.1); return [l, l, l]; } },
+    { id: 'sepia', name: 'Sepia', emoji: '🟤', css: 'sepia(1)', px: sepiaPx },
+    { id: 'vivid', name: 'Cerah', emoji: '🌟', css: 'saturate(1.5) contrast(1.08)', px: function (r, g, b) { var s = sat(r, g, b, 1.5); return [con(s[0], 1.08), con(s[1], 1.08), con(s[2], 1.08)]; } },
+    { id: 'warm', name: 'Hangat', emoji: '🧡', css: 'sepia(.3) saturate(1.3) brightness(1.03)', px: function (r, g, b) { return [r * 1.1 + 4, g * 1.03, b * 0.86]; } },
+    { id: 'cool', name: 'Sejuk', emoji: '💙', css: 'saturate(1.1) hue-rotate(-12deg)', px: function (r, g, b) { return [r * 0.9, g * 1.0, b * 1.12 + 4]; } },
+    { id: 'pink', name: 'Pink', emoji: '🌸', css: 'hue-rotate(-25deg) saturate(1.25) brightness(1.05)', px: function (r, g, b) { var s = sat(r * 1.08 + 8, g * 0.96, b * 1.04 + 6, 1.1); return s; } },
+    { id: 'cyan', name: 'Biru Sains', emoji: '🧪', css: 'grayscale(1) sepia(1) hue-rotate(150deg) saturate(2)', px: function (r, g, b) { var l = 0.299 * r + 0.587 * g + 0.114 * b; return [l * 0.55, l * 0.95, l * 1.12 + 10]; } },
+    { id: 'retro', name: 'Retro', emoji: '📼', css: 'sepia(.5) contrast(.92) brightness(1.05)', vignette: 0.5, px: function (r, g, b) { var s = sepiaPx(r, g, b); return [con((r + s[0]) / 2, 0.92) + 8, con((g + s[1]) / 2, 0.92) + 8, con((b + s[2]) / 2, 0.92) + 8]; } },
+    { id: 'pop', name: 'Pop Art', emoji: '🎨', css: 'saturate(1.8) contrast(1.3)', px: function (r, g, b) { var s = sat(r, g, b, 1.7); return s.map(function (v) { return Math.round(cl(v) / 255 * 4) / 4 * 255; }); } },
+    { id: 'glow', name: 'Glow', emoji: '✨', css: 'brightness(1.08) contrast(.95)', blur: true, px: function (r, g, b) { var s = sat(r * 1.05 + 6, g * 1.05 + 6, b * 1.05 + 6, 1.08); return s; } }
+  ];
+  var BLUR_OK = canvasFilterOk();
+  EFFECTS = EFFECTS.filter(function (e) { return !e.blur || BLUR_OK; });
+  function effectById(id) { for (var i = 0; i < EFFECTS.length; i++) if (EFFECTS[i].id === id) return EFFECTS[i]; return EFFECTS[0]; }
+
+  function applyEffect(src, id) {
+    var e = effectById(id);
+    if (!e.px) return src;
+    var c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
+    var ctx = c.getContext('2d');
+    ctx.drawImage(src, 0, 0);
+    if (e.blur && BLUR_OK) { ctx.save(); ctx.filter = 'blur(' + Math.max(2, Math.round(src.width / 220)) + 'px)'; ctx.globalAlpha = 0.45; ctx.drawImage(src, 0, 0); ctx.restore(); }
+    var img = ctx.getImageData(0, 0, c.width, c.height), d = img.data, w = c.width, h = c.height;
+    var cx = w / 2, cy = h / 2, maxd = Math.sqrt(cx * cx + cy * cy);
+    for (var i = 0, p = 0; i < d.length; i += 4, p++) {
+      var o = e.px(d[i], d[i + 1], d[i + 2]), k = 1;
+      if (e.vignette) { var x = p % w, y = (p / w) | 0, dist = Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy)) / maxd; k = 1 - e.vignette * dist * dist; }
+      d[i] = cl(o[0] * k); d[i + 1] = cl(o[1] * k); d[i + 2] = cl(o[2] * k);
+    }
+    ctx.putImageData(img, 0, 0);
+    return c;
+  }
+
+  function buildFx() {
+    ['fx-chips', 'fx-chips2'].forEach(function (id) {
+      var box = $(id); box.innerHTML = '';
+      EFFECTS.forEach(function (e) {
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'fx-chip' + (e.id === state.effect ? ' on' : '');
+        b.dataset.fx = e.id; b.textContent = e.emoji + ' ' + e.name; b.setAttribute('role', 'option');
+        b.addEventListener('click', function () { setEffect(e.id); });
+        box.appendChild(b);
+      });
+    });
+  }
+
+  function setEffect(id) {
+    state.effect = id; store('fx', id);
+    Array.prototype.forEach.call(document.querySelectorAll('.fx-chip'), function (b) { b.classList.toggle('on', b.dataset.fx === id); });
+    $('feed').style.filter = CSS_OK ? effectById(id).css : '';
+    if (screens.preview.classList.contains('active') && state.tplImg) { compose(); state.resultBlob = null; }
+  }
+
+  // ---------- konfeti ----------
+  function confetti() {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var c = $('confetti'), ctx = c.getContext('2d'), dpr = window.devicePixelRatio || 1;
+    c.width = innerWidth * dpr; c.height = innerHeight * dpr;
+    var em = ['✨', '💙', '☁️', '🧪', '🌿', '⭐', '🫧'], cols = ['#01cbff', '#ffcb00', '#ff9835', '#fd6866', '#3fd6c4', '#ff8fb1'];
+    var ps = [];
+    for (var i = 0; i < 70; i++) ps.push({ x: Math.random() * c.width, y: -Math.random() * c.height * 0.4, vx: (Math.random() - 0.5) * 3 * dpr, vy: (2 + Math.random() * 4) * dpr, r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.3, s: (14 + Math.random() * 14) * dpr, e: Math.random() < 0.45 ? em[(Math.random() * em.length) | 0] : null, c: cols[(Math.random() * cols.length) | 0] });
+    var t0 = performance.now();
+    (function frame(t) {
+      var el = t - t0; ctx.clearRect(0, 0, c.width, c.height);
+      ps.forEach(function (p) {
+        p.x += p.vx; p.y += p.vy; p.r += p.vr;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.globalAlpha = Math.max(0, 1 - el / 2600);
+        if (p.e) { ctx.font = p.s + 'px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(p.e, 0, 0); }
+        else { ctx.fillStyle = p.c; ctx.fillRect(-p.s / 3, -p.s / 6, p.s * 0.66, p.s / 3); }
+        ctx.restore();
+      });
+      if (el < 2600) requestAnimationFrame(frame); else ctx.clearRect(0, 0, c.width, c.height);
+    })(t0);
+  }
+
   // ---------- template ----------
   function formatName(f) { return f === 'strip' ? 'Photo Strip' : f === '4r' ? '4R Portrait' : 'Square 1:1'; }
 
+  function makeCard(t) {
+    var card = document.createElement('button');
+    card.className = 'card'; card.type = 'button';
+    var wrap = document.createElement('div'); wrap.className = 'tpl';
+    t.slots.forEach(function (s, i) {
+      var d = document.createElement('div'); d.className = 'slot'; d.textContent = i + 1;
+      d.style.cssText = 'left:' + (s.x / t.width * 100) + '%;top:' + (s.y / t.height * 100) + '%;width:' + (s.w / t.width * 100) + '%;height:' + (s.h / t.height * 100) + '%';
+      wrap.appendChild(d);
+    });
+    var img = document.createElement('img');
+    img.src = 'templates/' + t.file; img.alt = t.name; img.loading = 'lazy';
+    img.width = t.width; img.height = t.height;
+    wrap.appendChild(img);
+    var h = document.createElement('h3'); h.textContent = t.name;
+    var sm = document.createElement('small'); sm.textContent = t.slots.length + ' foto · ' + formatName(t.format);
+    card.appendChild(wrap); card.appendChild(h); card.appendChild(sm);
+    card.addEventListener('click', function () { chooseTemplate(t); });
+    return card;
+  }
+
   function renderTemplates() {
-    var grid = $('template-grid');
-    grid.innerHTML = '';
-    state.templates.forEach(function (t) {
-      var card = document.createElement('button');
-      card.className = 'card'; card.type = 'button';
-      var wrap = document.createElement('div'); wrap.className = 'tpl';
-      t.slots.forEach(function (s, i) {
-        var d = document.createElement('div'); d.className = 'slot'; d.textContent = i + 1;
-        d.style.cssText = 'left:' + (s.x / t.width * 100) + '%;top:' + (s.y / t.height * 100) + '%;width:' + (s.w / t.width * 100) + '%;height:' + (s.h / t.height * 100) + '%';
-        wrap.appendChild(d);
-      });
-      var img = document.createElement('img');
-      img.src = 'templates/' + t.file; img.alt = t.name; img.loading = 'lazy';
-      img.width = t.width; img.height = t.height;
-      wrap.appendChild(img);
-      var h = document.createElement('h3'); h.textContent = t.name;
-      var sm = document.createElement('small'); sm.textContent = t.slots.length + ' foto · ' + formatName(t.format);
-      card.appendChild(wrap); card.appendChild(h); card.appendChild(sm);
-      card.addEventListener('click', function () { chooseTemplate(t); });
-      grid.appendChild(card);
+    var list = $('template-list'), bar = $('cat-bar');
+    list.innerHTML = ''; bar.innerHTML = '';
+    var cats = (state.categories || []).slice();
+    var known = {}; cats.forEach(function (c) { known[c.id] = true; });
+    var extra = state.templates.some(function (t) { return !known[t.category]; });
+    if (extra) cats.push({ id: '_other', name: 'Lainnya', icon: '🎁' });
+    var groups = {};
+    state.templates.forEach(function (t) { var k = known[t.category] ? t.category : '_other'; (groups[k] = groups[k] || []).push(t); });
+    cats = cats.filter(function (c) { return groups[c.id] && groups[c.id].length; });
+
+    var chip = function (id, label, n) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'cat-chip' + (state.category === id ? ' on' : '');
+      b.dataset.cat = id; b.innerHTML = label + ' <small>' + n + '</small>';
+      b.addEventListener('click', function () { state.category = id; store('cat', id); applyCategory(); window.scrollTo(0, 0); });
+      bar.appendChild(b);
+    };
+    chip('all', '🎀 Semua', state.templates.length);
+    cats.forEach(function (c) { chip(c.id, c.icon + ' ' + c.name, groups[c.id].length); });
+
+    cats.forEach(function (c) {
+      var sec = document.createElement('section'); sec.className = 'cat-section'; sec.dataset.cat = c.id;
+      var h = document.createElement('h2'); h.className = 'cat-title'; h.innerHTML = c.icon + ' ' + c.name + ' <small>' + groups[c.id].length + ' template</small>';
+      var grid = document.createElement('div'); grid.className = 'grid';
+      groups[c.id].forEach(function (t) { grid.appendChild(makeCard(t)); });
+      sec.appendChild(h); sec.appendChild(grid); list.appendChild(sec);
+    });
+    applyCategory();
+  }
+
+  function applyCategory() {
+    var ok = false;
+    Array.prototype.forEach.call(document.querySelectorAll('.cat-chip'), function (b) { var on = b.dataset.cat === state.category; if (on) ok = true; b.classList.toggle('on', on); });
+    if (!ok) { state.category = 'all'; var f = document.querySelector('.cat-chip'); if (f) f.classList.add('on'); }
+    Array.prototype.forEach.call(document.querySelectorAll('.cat-section'), function (s) {
+      s.hidden = !(state.category === 'all' || s.dataset.cat === state.category);
+      s.querySelector('.cat-title').hidden = state.category !== 'all';
     });
   }
 
@@ -98,31 +224,33 @@
     f.removeAttribute('src'); // menutup koneksi -> server mematikan kamera saat idle
   }
 
-  function msg(text) {
+  function msg(text, kind) {
     var m = $('cam-msg');
-    if (!text) { m.hidden = true; return; }
-    m.textContent = text; m.hidden = false;
+    if (!text) { m.hidden = true; m.className = 'cam-msg'; return; }
+    m.textContent = text; m.className = 'cam-msg' + (kind === 'err' ? ' err' : ''); m.hidden = false;
   }
 
   // Preview langsung dari kamera yang terpasang di Orange Pi (MJPEG)
   function startCamera() {
     stopStream();
-    msg('Menyalakan kamera… 📷');
+    msg('⏳ Menyalakan kamera…');
     var f = $('feed');
     return new Promise(function (resolve) {
-      var done = false;
+      var done = false, poll, timer;
       var finish = function (ok, text) {
-        if (done) return; done = true; clearTimeout(timer);
+        if (done) return; done = true; clearTimeout(timer); clearInterval(poll);
         f.onload = f.onerror = null;
         state.streamOk = ok;
-        if (ok) { applyMirror(); msg(''); }
+        if (ok) { applyMirror(); msg(''); f.style.filter = CSS_OK ? effectById(state.effect).css : ''; }
         else {
           stopStream();
-          msg(text || 'Kamera di Orange Pi tidak terdeteksi. Pastikan kamera USB terpasang, lalu tekan tombol Mulai untuk mencoba lagi.');
+          msg(text || 'Kamera di Orange Pi tidak terdeteksi. Pastikan kamera USB terpasang, lalu tekan tombol Mulai untuk mencoba lagi.', 'err');
         }
         resolve(ok);
       };
-      var timer = setTimeout(function () { finish(false); }, 10000);
+      timer = setTimeout(function () { finish(false); }, 10000);
+      // sebagian browser tidak memicu "load" untuk stream MJPEG -> cek juga lewat ukuran gambar
+      poll = setInterval(function () { if (f.getAttribute('src') && f.naturalWidth > 0) finish(true); }, 150);
       f.onload = function () { finish(true); };
       f.onerror = function () { finish(false); };
       f.src = 'api/stream?cam=' + state.camIndex + '&t=' + Date.now();
@@ -250,7 +378,7 @@
     var ctx = c.getContext('2d');
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, t.width, t.height);
     t.slots.forEach(function (s, i) {
-      if (state.photos[i]) ctx.drawImage(state.photos[i], s.x - 4, s.y - 4, s.w + 8, s.h + 8); // sedikit bleed di bawah frame
+      if (state.photos[i]) ctx.drawImage(applyEffect(state.photos[i], state.effect), s.x - 4, s.y - 4, s.w + 8, s.h + 8); // sedikit bleed di bawah frame
     });
     ctx.drawImage(state.tplImg, 0, 0, t.width, t.height);
   }
@@ -261,6 +389,7 @@
       compose();
       state.resultBlob = null;
       show('preview');
+      confetti();
       $('btn-share').hidden = !(navigator.canShare && window.File);
     };
     if (state.tplImg) go();
@@ -313,6 +442,10 @@
   // ---------- init ----------
   function init() {
     state.timer = parseInt(load('timer', '5'), 10) || 5;
+    state.effect = load('fx', 'none');
+    state.category = load('cat', 'all');
+    if (effectById(state.effect).id !== state.effect) state.effect = 'none';
+    buildFx();
     state.sound = load('sound', '1') === '1';
     $('btn-sound').setAttribute('aria-pressed', String(state.sound));
 
@@ -354,7 +487,7 @@
     }).catch(function () {});
     fetch('templates/templates.json', { cache: 'no-cache' })
       .then(function (r) { return r.json(); })
-      .then(function (cfg) { state.templates = cfg.templates; renderTemplates(); })
+      .then(function (cfg) { state.templates = cfg.templates; state.categories = cfg.categories || []; renderTemplates(); })
       .catch(function () { toast('Gagal memuat daftar template.', 6000); });
   }
 

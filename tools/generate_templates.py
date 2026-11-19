@@ -2,7 +2,7 @@
 """
 Generator template Photobooth AQHI Lab.
 
-Menghasilkan 18 template PNG (slot foto transparan) + public/templates/templates.json.
+Menghasilkan 32 template PNG (slot foto transparan) + public/templates/templates.json.
 Jalankan ulang jika ingin mengubah desain bawaan:
 
     pip install pillow
@@ -531,6 +531,57 @@ def earth(p, cx, cy, r):
     leaf(p, cx + 0.14 * r, cy - 1.12 * r, 0.2 * r, ang=-140)
 
 
+def moon(p, cx, cy, r):
+    p.circ(cx, cy, r, fill="#fff3b0", outline="#f0c64a", w=max(r * 0.06, 2.5))
+    for dx, dy, rad in ((-0.5, -0.45, 0.14), (0.55, -0.2, 0.1), (0.35, 0.6, 0.13)):
+        p.circ(cx + dx * r, cy + dy * r, rad * r, fill="#ffe27a")
+    face(p, cx, cy + 0.05 * r, r * 0.85)
+
+
+def balloon(p, cx, cy, r, col="#ff6f91"):
+    p.line([(cx, cy + 0.85 * r), (cx - 0.1 * r, cy + 1.2 * r), (cx + 0.08 * r, cy + 1.5 * r)], "#7d8fa3", max(r * 0.04, 1.6))
+    p.poly([(cx, cy + 0.8 * r), (cx - 0.12 * r, cy + 0.98 * r), (cx + 0.12 * r, cy + 0.98 * r)], fill=_shade(col, 0.85))
+    p.ell(cx, cy, 0.72 * r, 0.88 * r, fill=col, outline=_shade(col, 0.8), w=max(r * 0.05, 2))
+    p.ell(cx - 0.28 * r, cy - 0.35 * r, 0.1 * r, 0.2 * r, fill="#ffffff88")
+    face(p, cx, cy + 0.08 * r, r * 0.7)
+
+
+def gift(p, cx, cy, r, col="#7fd8ff"):
+    dark = _shade(col, 0.8)
+    p.rr(cx - 0.8 * r, cy - 0.15 * r, 1.6 * r, 0.95 * r, 0.1 * r, fill=col, outline=dark, ow=max(r * 0.05, 2))
+    p.rr(cx - 0.88 * r, cy - 0.45 * r, 1.76 * r, 0.38 * r, 0.1 * r, fill=col, outline=dark, ow=max(r * 0.05, 2))
+    p.rr(cx - 0.11 * r, cy - 0.45 * r, 0.22 * r, 1.25 * r, 0.03 * r, fill="#ffd84a")
+    p.circ(cx - 0.22 * r, cy - 0.6 * r, 0.22 * r, fill="#ffd84a", outline="#f0a800", w=2)
+    p.circ(cx + 0.22 * r, cy - 0.6 * r, 0.22 * r, fill="#ffd84a", outline="#f0a800", w=2)
+    p.circ(cx, cy - 0.45 * r, 0.1 * r, fill="#f0a800")
+    face(p, cx, cy + 0.3 * r, r * 0.5)
+
+
+def bird(p, cx, cy, r, col="#5ec8ff"):
+    dark = _shade(col, 0.75)
+    p.poly([(cx - 0.9 * r, cy + 0.2 * r), (cx - 0.55 * r, cy + 0.0 * r), (cx - 0.55 * r, cy + 0.4 * r)], fill=dark)
+    p.ell(cx, cy, 0.78 * r, 0.7 * r, fill=col, outline=dark, w=max(r * 0.05, 2))
+    p.ell(cx + 0.05 * r, cy + 0.25 * r, 0.5 * r, 0.38 * r, fill="#ffffffcc")
+    p.poly([(cx + 0.7 * r, cy - 0.05 * r), (cx + 1.05 * r, cy + 0.08 * r), (cx + 0.7 * r, cy + 0.2 * r)], fill="#ffae2e", outline="#d98200", w=2)
+    p.circ(cx + 0.35 * r, cy - 0.2 * r, 0.09 * r, fill=DARK)
+    p.circ(cx + 0.32 * r, cy - 0.23 * r, 0.035 * r, fill=WHITE)
+    p.ell(cx + 0.42 * r, cy + 0.02 * r, 0.09 * r, 0.055 * r, fill="#ff9fb0")
+    p.ell(cx - 0.2 * r, cy + 0.1 * r, 0.3 * r, 0.2 * r, fill=dark)
+    for dx in (-0.15, 0.15):
+        p.line([(cx + dx * r, cy + 0.68 * r), (cx + dx * r, cy + 0.9 * r)], "#ffae2e", max(r * 0.05, 1.8))
+
+
+def butterfly(p, cx, cy, r, c1="#ff9bd0", c2="#c9a8ff"):
+    for sx in (-1, 1):
+        p.line([(cx, cy - 0.3 * r), (cx + sx * 0.35 * r, cy - 0.8 * r)], "#6b4c7a", max(r * 0.04, 1.6))
+        p.circ(cx + sx * 0.35 * r, cy - 0.82 * r, 0.06 * r, fill="#6b4c7a")
+        p.ell(cx + sx * 0.5 * r, cy - 0.2 * r, 0.5 * r, 0.42 * r, fill=c1, outline=_shade(c1, 0.75), w=max(r * 0.04, 2))
+        p.ell(cx + sx * 0.4 * r, cy + 0.38 * r, 0.34 * r, 0.3 * r, fill=c2, outline=_shade(c2, 0.75), w=max(r * 0.04, 2))
+        p.circ(cx + sx * 0.55 * r, cy - 0.22 * r, 0.12 * r, fill="#ffffffaa")
+    p.rr(cx - 0.09 * r, cy - 0.4 * r, 0.18 * r, 0.95 * r, 0.09 * r, fill="#6b4c7a")
+    p.circ(cx, cy - 0.38 * r, 0.14 * r, fill="#6b4c7a")
+
+
 ICONS = {
     "sparkle": lambda p, x, y, r: sparkle(p, x, y, r, WHITE),
     "sparkle_y": lambda p, x, y, r: sparkle(p, x, y, r, SUN),
@@ -567,6 +618,15 @@ ICONS = {
     "smog": lambda p, x, y, r: smog(p, x, y, r),
     "earth": lambda p, x, y, r: earth(p, x, y, r),
     "magnifier": lambda p, x, y, r: magnifier(p, x, y, r),
+    "moon": lambda p, x, y, r: moon(p, x, y, r),
+    "balloon": lambda p, x, y, r: balloon(p, x, y, r),
+    "balloon_b": lambda p, x, y, r: balloon(p, x, y, r, col="#5ec8ff"),
+    "balloon_y": lambda p, x, y, r: balloon(p, x, y, r, col="#ffcf2e"),
+    "gift": lambda p, x, y, r: gift(p, x, y, r),
+    "gift_p": lambda p, x, y, r: gift(p, x, y, r, col="#ff9bb8"),
+    "bird": lambda p, x, y, r: bird(p, x, y, r),
+    "bird_y": lambda p, x, y, r: bird(p, x, y, r, col="#ffd84a"),
+    "butterfly": lambda p, x, y, r: butterfly(p, x, y, r),
     "clipboard": lambda p, x, y, r: clipboard(p, x, y, r),
 }
 
@@ -695,7 +755,7 @@ LAYOUTS = {
 }
 
 # ---- 10 template ----------------------------------------------------------
-CHARS = {"scientist", "scientist2", "scientist3", "researcher", "doctor", "doctor2", "robot", "robot2", "smog", "earth"}
+CHARS = {"moon", "balloon", "balloon_b", "balloon_y", "gift", "gift_p", "bird", "bird_y", "butterfly", "scientist", "scientist2", "scientist3", "researcher", "doctor", "doctor2", "robot", "robot2", "smog", "earth"}
 
 TEMPLATES = [
     dict(id="awan-ceria", name="Awan Ceria", layout="strip3", bg=("#8fd8ff", "#eafaff"), accent="#4cc3f5", ui="#4cc3f5",
@@ -770,7 +830,82 @@ TEMPLATES = [
          title="LAB COAT", sub="Club Peneliti Muda", tsize=92, tcol=WHITE, tstroke="#232d8f", dots="#c3caff", subcol="#232d8f",
          hero=[("scientist", 78, 62, 46), ("researcher", 522, 62, 46)],
          scatter=["sparkle", "star", "flask", "atom", "heart", "bubble"], stickers=["scientist2", "doctor", "scientist3"]),
+    dict(id="eksperimen-seru", name="Eksperimen Seru", layout="sq4", bg=("#d8ff8a", "#f4ffd9"), accent="#8bd400", ui="#8bd400",
+         title="EKSPERIMEN SERU", sub="Campur, aduk, temukan!", tsize=88, tcol=WHITE, tstroke="#4d7a00", dots="#ecffb8", subcol="#385a00",
+         hero=[("flask", 100, 110, 56), ("scientist3", 1090, 110, 60)],
+         scatter=["bubble", "flask_p", "tube", "molecule", "sparkle_y", "star"], stickers=["scientist", "flask_p", "atom", "tube"]),
+    dict(id="dunia-mikro", name="Dunia Mikro", layout="r5", bg=("#e2a8ff", "#fbe9ff"), accent="#c24fff", ui="#c24fff",
+         title="DUNIA MIKRO", sub="Partikel kecil, dampak besar", tsize=104, tcol=WHITE, tstroke="#7a1fb3", dots="#f4d4ff", subcol="#5b1587",
+         hero=[("microscope", 150, 235, 78), ("molecule", 1050, 235, 78)],
+         scatter=["atom", "molecule", "bubble", "sparkle", "star", "magnifier"], stickers=["scientist2", "atom", "microscope", "molecule"]),
+    dict(id="napas-sehat", name="Napas Sehat", layout="r3", bg=("#c8f7d2", "#fff0f6"), accent="#ff8fb1", ui="#ff8fb1",
+         title="NAPAS SEHAT", sub="Paru-paru bahagia, hidup ceria", tsize=116, tcol=WHITE, tstroke="#2f9e5a", dots="#ffffff", subcol="#1f6f3f",
+         hero=[("lungs", 140, 150, 96), ("heart", 1060, 160, 80)],
+         scatter=["heart", "leaf", "sparkle", "drop", "bubble", "flower"], stickers=["doctor2", "lungs", "heart", "leaf"]),
+    dict(id="sehat-ceria", name="Sehat Ceria", layout="sq3", bg=("#ffd3b0", "#fff1e6"), accent="#ff9a5c", ui="#ff9a5c",
+         title="SEHAT CERIA", sub="Udara bersih, badan sehat", tsize=104, tcol=WHITE, tstroke="#c25a14", dots="#ffe6d2", subcol="#8a3f0c",
+         hero=[("doctor", 120, 100, 62), ("mask", 1080, 100, 60)],
+         scatter=["heart", "star", "sparkle_y", "drop", "cloud_nf", "leaf"], stickers=["doctor2", "heart", "mask", "star"]),
+    dict(id="hutan-ceria", name="Hutan Ceria", layout="r4", bg=("#7fd99a", "#d6f5c9"), accent="#2f9e5a", ui="#2f9e5a",
+         title="HUTAN CERIA", sub="Rumah pohon dan sahabat burung", tsize=108, tcol=WHITE, tstroke="#1f6f3f", dots="#e8fbe3", subcol="#14553a",
+         hero=[("tree", 120, 175, 92), ("bird", 1080, 185, 80)],
+         scatter=["leaf", "leaf2", "bird_y", "butterfly", "flower", "sparkle"], stickers=["bird", "tree", "butterfly", "researcher"]),
+    dict(id="taman-bunga", name="Taman Bunga", layout="sq4", bg=("#ffc9e0", "#fff3c9"), accent="#ff7fb0", ui="#ff7fb0",
+         title="TAMAN BUNGA", sub="Bunga mekar, udara segar", tsize=104, tcol=WHITE, tstroke="#c23a78", dots="#fff0f6", subcol="#8a2255",
+         hero=[("butterfly", 120, 105, 56), ("flower", 1080, 105, 56)],
+         scatter=["flower", "butterfly", "leaf", "heart", "sparkle_y", "bird_y"], stickers=["butterfly", "flower", "bird", "heart"]),
+    dict(id="langit-malam", name="Langit Malam", layout="r3", bg=("#1b2a6b", "#4b5fc0"), accent="#ffd84a", ui="#4b5fc0",
+         title="LANGIT MALAM", sub="Bintang tampak jelas saat udara bersih", tsize=108, tcol=WHITE, tstroke="#0c1440", dots="#3a4aa0", subcol="#e6ebff",
+         hero=[("moon", 140, 150, 80), ("star", 1060, 150, 60)],
+         scatter=["star", "sparkle_y", "sparkle", "star", "cloud_nf"], stickers=["moon", "star", "bird", "star"]),
+    dict(id="angin-sejuk", name="Angin Sejuk", layout="strip4", bg=("#bff3ff", "#f2fdff"), accent="#5ec8ff", ui="#5ec8ff",
+         title="ANGIN SEJUK", sub="Hembusan segar", tsize=62, tcol=WHITE, tstroke="#1f7aa8", dots="#ffffff", subcol="#14577a",
+         hero=[("wind", 58, 90, 40), ("bird", 548, 88, 36)],
+         scatter=["wind", "leaf", "leaf2", "cloud_nf", "bubble", "sparkle"], stickers=["bird", "wind", "leaf", "cloud"]),
+    dict(id="aqhi-biru", name="Udara Bersih (AQHI 1-3)", layout="r4", bg=("#6fd8ff", "#e0f7ff"), accent="#01cbff", ui="#01cbff",
+         title="UDARA BERSIH", sub="AQHI 1-3 · Risiko Rendah", tsize=104, tcol=WHITE, tstroke="#016797", dots="#ffffff", subcol="#014a6e",
+         hero=[("sun", 120, 175, 56), ("cloud", 1080, 180, 76)],
+         scatter=["sparkle", "heart", "leaf", "bird", "cloud_nf", "drop"], stickers=["cloud", "bird", "sun", "heart"]),
+    dict(id="aqhi-kuning", name="Waspada (AQHI 4-6)", layout="r4", bg=("#ffe45c", "#fff6c2"), accent="#ffcb00", ui="#ffcb00",
+         title="WASPADA", sub="AQHI 4-6 · Risiko Sedang", tsize=124, tcol=WHITE, tstroke="#a86f00", dots="#fff2a0", subcol="#7a4f00",
+         hero=[("mask", 120, 175, 70), ("cloud", 1080, 180, 76)],
+         scatter=["sparkle_y", "star", "drop", "cloud_nf", "shield"], stickers=["mask", "doctor", "cloud", "shield"]),
+    dict(id="aqhi-merah", name="Awas Polusi (AQHI 7-10+)", layout="r4", bg=("#ff8a8a", "#ffd9d9"), accent="#fe0002", ui="#fe0002",
+         title="AWAS POLUSI", sub="AQHI 7-10+ · Risiko Tinggi", tsize=92, tcol=WHITE, tstroke="#8a0000", dots="#ffc4c4", subcol="#6b0000",
+         hero=[("smog", 120, 175, 74), ("mask", 1080, 175, 70)],
+         scatter=["sparkle", "smog", "drop", "shield", "heart"], stickers=["smog", "mask", "shield", "doctor2"]),
+    dict(id="pesta-sains", name="Pesta Sains", layout="sq5", bg=("#ffc2e8", "#fff3b0"), accent="#ff6fb5", ui="#ff6fb5",
+         title="PESTA SAINS", sub="Hari seru di Lab AQHI!", tsize=104, tcol=WHITE, tstroke="#b0247a", dots="#ffffff", subcol="#7a1555",
+         hero=[("balloon", 105, 100, 56), ("balloon_b", 1095, 100, 56)],
+         scatter=["sparkle", "star", "heart", "sparkle_y", "gift_p", "balloon_y"], stickers=["gift", "balloon_y", "scientist2", "gift_p", "balloon"]),
+    dict(id="kunjungan-lab", name="Kunjungan Lab", layout="sq4", bg=("#a8e6ff", "#fff3c9"), accent="#ffb800", ui="#ffb800",
+         title="KUNJUNGAN LAB", sub="Terima kasih sudah berkunjung ke AQHI Lab", tsize=88, tcol=WHITE, tstroke="#1f6f9a", dots="#ffffff", subcol="#14577a",
+         hero=[("scientist", 100, 110, 60), ("scientist2", 1100, 110, 60)],
+         scatter=["sparkle", "star", "heart", "balloon_b", "flask", "cloud_nf"], stickers=["robot", "gift", "scientist3", "balloon_y"]),
+    dict(id="juara-peneliti", name="Juara Peneliti", layout="strip3", bg=("#ffe16b", "#fff6c9"), accent="#ffb800", ui="#ffb800",
+         title="JUARA!", sub="Peneliti Cilik AQHI", tsize=104, tcol=WHITE, tstroke="#b86e00", dots="#fff0a0", subcol="#7a4600",
+         hero=[("star", 76, 70, 46), ("star", 524, 70, 46)],
+         scatter=["sparkle_y", "star", "heart", "balloon_y", "sparkle", "gift"], stickers=["researcher", "star", "scientist", "balloon"]),
 ]
+
+
+CATEGORIES = [
+    {"id": "sains", "name": "Sains & Lab", "icon": "🧪"},
+    {"id": "kesehatan", "name": "Kesehatan", "icon": "🫁"},
+    {"id": "alam", "name": "Alam & Bumi", "icon": "🌳"},
+    {"id": "cuaca", "name": "Cuaca & Langit", "icon": "☁️"},
+    {"id": "aqhi", "name": "Skala AQHI", "icon": "🌈"},
+    {"id": "pesta", "name": "Pesta & Ceria", "icon": "🎉"},
+]
+CATEGORY_OF = {
+    "sains": ["lab-buddies", "bubble-science", "dr-sains", "pelangi-lab", "labcoat-club", "riset-squad", "eksperimen-seru", "dunia-mikro"],
+    "kesehatan": ["paru-sehat", "dokter-udara", "mask-hero", "napas-sehat", "sehat-ceria"],
+    "alam": ["clean-air-club", "tree-power", "bumi-sehat", "hutan-ceria", "taman-bunga"],
+    "cuaca": ["awan-ceria", "hujan-ceria", "sunny-breeze", "langit-malam", "angin-sejuk"],
+    "aqhi": ["aqhi-rainbow", "airbot", "smog-fighter", "aqhi-biru", "aqhi-kuning", "aqhi-merah"],
+    "pesta": ["pesta-sains", "kunjungan-lab", "juara-peneliti"],
+}
+CAT_LOOKUP = {tid: c for c, ids in CATEGORY_OF.items() for tid in ids}
 
 
 def build(t):
@@ -846,14 +981,15 @@ def build(t):
     os.makedirs(OUT_DIR, exist_ok=True)
     fname = "%s.png" % t["id"]
     out.save(os.path.join(OUT_DIR, fname), optimize=True)
-    return dict(id=t["id"], name=t["name"], file=fname, width=W, height=H, format=lay["format"],
+    return dict(id=t["id"], name=t["name"], category=CAT_LOOKUP[t["id"]], file=fname, width=W, height=H, format=lay["format"],
                 color=t["ui"], slots=[dict(x=s["x"], y=s["y"], w=s["w"], h=s["h"], radius=s["radius"]) for s in slots])
 
 
 def main():
     items = [build(t) for t in TEMPLATES]
     cfg = {
-        "version": 1,
+        "version": 2,
+        "categories": CATEGORIES,
         "note": "Koordinat slot dalam piksel template (x, y, w, h). Ganti PNG + angka ini dengan hasil Figma.",
         "templates": items,
     }

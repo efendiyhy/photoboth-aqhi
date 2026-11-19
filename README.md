@@ -2,7 +2,8 @@
 
 Photobooth berbasis web untuk Laboratorium **AQHI (Air Quality Health Impact)** — edukasi dan riset dampak kualitas udara terhadap kesehatan. Berjalan **offline** di **Orange Pi** yang berperan sebagai **Wi-Fi Hotspot**. **Kamera (USB webcam) terpasang di Orange Pi**; pengunjung cukup konek ke Wi-Fi, membuka browser HP/tablet, lalu melihat preview kamera Orange Pi dan menekan tombol foto.
 
-- **18 template lucu & warna-warni** (karakter kartun ilmuwan berjas lab, peneliti, dokter, robot sensor, awan smog, bumi, paru-paru, pohon, dll. + skala AQHI 1–10+) — format Photo Strip `600×1800`, 4R `1200×1800`, Square `1200×1200`; 3–5 slot foto.
+- **32 template lucu & warna-warni dalam 6 kategori** (Sains & Lab, Kesehatan, Alam & Bumi, Cuaca & Langit, Skala AQHI, Pesta & Ceria) dengan karakter kartun ilmuwan berjas lab, peneliti, dokter, robot sensor, awan smog, bumi, burung, dll. — format Photo Strip `600×1800`, 4R `1200×1800`, Square `1200×1200`; 3–5 slot foto.
+- **Efek foto** (Normal, Hitam Putih, Sepia, Cerah, Hangat, Sejuk, Pink, Biru Sains, Retro, Pop Art, Glow): live preview di kamera dan bisa diganti lagi di halaman hasil. Efek yang butuh fitur browser tertentu (Glow) otomatis disembunyikan bila tidak didukung.
 - **Zero server storage**: server hanya meneruskan frame kamera dari memori (preview MJPEG + snapshot) — tidak ada yang ditulis ke disk. Penggabungan template (HTML5 Canvas) dan unduhan terjadi di browser pengguna. Server hanya menerima GET/HEAD (tidak ada upload).
 - Timer hitung mundur (3/5/7/10 dtk), mirror, ganti kamera (bila Orange Pi punya >1 kamera), preview, **Ulangi Foto** & **Download Hasil**.
 - Server Node.js tanpa paket npm (butuh `ffmpeg`). Port **8080** — **bukan 5000**. Tidak perlu HTTPS karena kamera dibuka di server, bukan di HP.
@@ -12,7 +13,7 @@ photoboth-aqhi/
 ├── server.js                  # server statis (tanpa npm install)
 ├── public/                    # frontend (mobile-first)
 │   ├── index.html · css/ · js/app.js
-│   └── templates/             # 18 PNG + templates.json (koordinat slot)
+│   └── templates/             # 32 PNG + templates.json (koordinat slot)
 ├── tools/generate_templates.py# pembuat template bawaan (opsional)
 ├── scripts/                   # install-orangepi.sh · setup-hotspot.sh (opsional)
 └── deploy/aqhi-photobooth.service
@@ -126,17 +127,18 @@ Template = **satu PNG berukuran penuh** dengan area foto **transparan** + entri 
 ```json
 {
   "id": "awan-ceria", "name": "Awan Ceria", "file": "awan-ceria.png",
-  "width": 600, "height": 1800, "format": "strip", "color": "#4cc3f5",
+  "category": "cuaca", "width": 600, "height": 1800, "format": "strip", "color": "#4cc3f5",
   "slots": [
     { "x": 40, "y": 300, "w": 520, "h": 400, "radius": 30 },
     { "x": 40, "y": 750, "w": 520, "h": 400, "radius": 30 }
   ]
 }
 ```
+   `category`: id dari daftar `categories` di bagian atas `templates.json` (`sains`, `kesehatan`, `alam`, `cuaca`, `aqhi`, `pesta`; kategori baru cukup ditambahkan ke daftar itu). Template tanpa kategori masuk grup *Lainnya*.
    `format`: `strip` | `4r` | `square`. Jumlah `slots` = jumlah jepretan. Urutan slot = urutan foto. Urutan template di galeri = urutan di array.
 6. Muat ulang halaman (tidak perlu restart server).
 
-Template bawaan (18 buah) dibuat dengan `python3 tools/generate_templates.py` (butuh `pip install pillow`) — bisa diubah palet/ikonnya lalu dijalankan ulang untuk membuat ulang 18 PNG + JSON.
+Template bawaan (32 buah) dibuat dengan `python3 tools/generate_templates.py` (butuh `pip install pillow`) — bisa diubah palet/ikonnya lalu dijalankan ulang untuk membuat ulang 32 PNG + JSON.
 
 **Palet tema:** biru langit `#8fd8ff`, hijau toska `#3fd6c4`, putih `#ffffff`, skala AQHI `#01cbff #0099cb #016797 #fffe03 #ffcb00 #ff9835 #fd6866 #fe0002 #cc0001 #9a0100 #640100` (1–10+).
 

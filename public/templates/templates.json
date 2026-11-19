@@ -1,10 +1,43 @@
 {
-  "version": 1,
+  "version": 2,
+  "categories": [
+    {
+      "id": "sains",
+      "name": "Sains & Lab",
+      "icon": "🧪"
+    },
+    {
+      "id": "kesehatan",
+      "name": "Kesehatan",
+      "icon": "🫁"
+    },
+    {
+      "id": "alam",
+      "name": "Alam & Bumi",
+      "icon": "🌳"
+    },
+    {
+      "id": "cuaca",
+      "name": "Cuaca & Langit",
+      "icon": "☁️"
+    },
+    {
+      "id": "aqhi",
+      "name": "Skala AQHI",
+      "icon": "🌈"
+    },
+    {
+      "id": "pesta",
+      "name": "Pesta & Ceria",
+      "icon": "🎉"
+    }
+  ],
   "note": "Koordinat slot dalam piksel template (x, y, w, h). Ganti PNG + angka ini dengan hasil Figma.",
   "templates": [
     {
       "id": "awan-ceria",
       "name": "Awan Ceria",
+      "category": "cuaca",
       "file": "awan-ceria.png",
       "width": 600,
       "height": 1800,
@@ -37,6 +70,7 @@
     {
       "id": "lab-buddies",
       "name": "Lab Buddies",
+      "category": "sains",
       "file": "lab-buddies.png",
       "width": 600,
       "height": 1800,
@@ -76,6 +110,7 @@
     {
       "id": "paru-sehat",
       "name": "Paru-paru Sehat",
+      "category": "kesehatan",
       "file": "paru-sehat.png",
       "width": 1200,
       "height": 1800,
@@ -108,6 +143,7 @@
     {
       "id": "clean-air-club",
       "name": "Clean Air Club",
+      "category": "alam",
       "file": "clean-air-club.png",
       "width": 1200,
       "height": 1800,
@@ -147,6 +183,7 @@
     {
       "id": "aqhi-rainbow",
       "name": "AQHI Rainbow",
+      "category": "aqhi",
       "file": "aqhi-rainbow.png",
       "width": 1200,
       "height": 1800,
@@ -193,6 +230,7 @@
     {
       "id": "mask-hero",
       "name": "Mask Hero",
+      "category": "kesehatan",
       "file": "mask-hero.png",
       "width": 1200,
       "height": 1200,
@@ -225,6 +263,7 @@
     {
       "id": "sunny-breeze",
       "name": "Sunny Breeze",
+      "category": "cuaca",
       "file": "sunny-breeze.png",
       "width": 1200,
       "height": 1200,
@@ -264,6 +303,7 @@
     {
       "id": "bubble-science",
       "name": "Bubble Science",
+      "category": "sains",
       "file": "bubble-science.png",
       "width": 1200,
       "height": 1200,
@@ -310,6 +350,7 @@
     {
       "id": "tree-power",
       "name": "Tree Power",
+      "category": "alam",
       "file": "tree-power.png",
       "width": 600,
       "height": 1800,
@@ -349,6 +390,7 @@
     {
       "id": "hujan-ceria",
       "name": "Hujan Ceria",
+      "category": "cuaca",
       "file": "hujan-ceria.png",
       "width": 1200,
       "height": 1800,
@@ -388,6 +430,7 @@
     {
       "id": "dr-sains",
       "name": "Dr. Sains",
+      "category": "sains",
       "file": "dr-sains.png",
       "width": 1200,
       "height": 1800,
@@ -427,6 +470,7 @@
     {
       "id": "riset-squad",
       "name": "Riset Squad",
+      "category": "sains",
       "file": "riset-squad.png",
       "width": 1200,
       "height": 1200,
@@ -466,6 +510,7 @@
     {
       "id": "dokter-udara",
       "name": "Dokter Udara",
+      "category": "kesehatan",
       "file": "dokter-udara.png",
       "width": 600,
       "height": 1800,
@@ -505,6 +550,7 @@
     {
       "id": "airbot",
       "name": "AirBot Sensor",
+      "category": "aqhi",
       "file": "airbot.png",
       "width": 1200,
       "height": 1800,
@@ -551,6 +597,7 @@
     {
       "id": "smog-fighter",
       "name": "Smog Fighter",
+      "category": "aqhi",
       "file": "smog-fighter.png",
       "width": 1200,
       "height": 1200,
@@ -583,6 +630,7 @@
     {
       "id": "bumi-sehat",
       "name": "Bumi Sehat",
+      "category": "alam",
       "file": "bumi-sehat.png",
       "width": 1200,
       "height": 1800,
@@ -615,6 +663,7 @@
     {
       "id": "pelangi-lab",
       "name": "Pelangi Lab",
+      "category": "sains",
       "file": "pelangi-lab.png",
       "width": 1200,
       "height": 1200,
@@ -661,11 +710,558 @@
     {
       "id": "labcoat-club",
       "name": "Lab Coat Club",
+      "category": "sains",
       "file": "labcoat-club.png",
       "width": 600,
       "height": 1800,
       "format": "strip",
       "color": "#4f5fe0",
+      "slots": [
+        {
+          "x": 40,
+          "y": 300,
+          "w": 520,
+          "h": 400,
+          "radius": 30
+        },
+        {
+          "x": 40,
+          "y": 750,
+          "w": 520,
+          "h": 400,
+          "radius": 30
+        },
+        {
+          "x": 40,
+          "y": 1200,
+          "w": 520,
+          "h": 400,
+          "radius": 30
+        }
+      ]
+    },
+    {
+      "id": "eksperimen-seru",
+      "name": "Eksperimen Seru",
+      "category": "sains",
+      "file": "eksperimen-seru.png",
+      "width": 1200,
+      "height": 1200,
+      "format": "square",
+      "color": "#8bd400",
+      "slots": [
+        {
+          "x": 60,
+          "y": 240,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        },
+        {
+          "x": 620,
+          "y": 240,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        },
+        {
+          "x": 60,
+          "y": 650,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        },
+        {
+          "x": 620,
+          "y": 650,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        }
+      ]
+    },
+    {
+      "id": "dunia-mikro",
+      "name": "Dunia Mikro",
+      "category": "sains",
+      "file": "dunia-mikro.png",
+      "width": 1200,
+      "height": 1800,
+      "format": "4r",
+      "color": "#c24fff",
+      "slots": [
+        {
+          "x": 80,
+          "y": 320,
+          "w": 1040,
+          "h": 470,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 830,
+          "w": 500,
+          "h": 400,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 830,
+          "w": 500,
+          "h": 400,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 1270,
+          "w": 500,
+          "h": 400,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 1270,
+          "w": 500,
+          "h": 400,
+          "radius": 44
+        }
+      ]
+    },
+    {
+      "id": "napas-sehat",
+      "name": "Napas Sehat",
+      "category": "kesehatan",
+      "file": "napas-sehat.png",
+      "width": 1200,
+      "height": 1800,
+      "format": "4r",
+      "color": "#ff8fb1",
+      "slots": [
+        {
+          "x": 80,
+          "y": 330,
+          "w": 1040,
+          "h": 410,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 780,
+          "w": 1040,
+          "h": 410,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 1230,
+          "w": 1040,
+          "h": 410,
+          "radius": 44
+        }
+      ]
+    },
+    {
+      "id": "sehat-ceria",
+      "name": "Sehat Ceria",
+      "category": "kesehatan",
+      "file": "sehat-ceria.png",
+      "width": 1200,
+      "height": 1200,
+      "format": "square",
+      "color": "#ff9a5c",
+      "slots": [
+        {
+          "x": 60,
+          "y": 240,
+          "w": 640,
+          "h": 760,
+          "radius": 40
+        },
+        {
+          "x": 740,
+          "y": 240,
+          "w": 400,
+          "h": 360,
+          "radius": 40
+        },
+        {
+          "x": 740,
+          "y": 640,
+          "w": 400,
+          "h": 360,
+          "radius": 40
+        }
+      ]
+    },
+    {
+      "id": "hutan-ceria",
+      "name": "Hutan Ceria",
+      "category": "alam",
+      "file": "hutan-ceria.png",
+      "width": 1200,
+      "height": 1800,
+      "format": "4r",
+      "color": "#2f9e5a",
+      "slots": [
+        {
+          "x": 80,
+          "y": 340,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 340,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 940,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 940,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        }
+      ]
+    },
+    {
+      "id": "taman-bunga",
+      "name": "Taman Bunga",
+      "category": "alam",
+      "file": "taman-bunga.png",
+      "width": 1200,
+      "height": 1200,
+      "format": "square",
+      "color": "#ff7fb0",
+      "slots": [
+        {
+          "x": 60,
+          "y": 240,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        },
+        {
+          "x": 620,
+          "y": 240,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        },
+        {
+          "x": 60,
+          "y": 650,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        },
+        {
+          "x": 620,
+          "y": 650,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        }
+      ]
+    },
+    {
+      "id": "langit-malam",
+      "name": "Langit Malam",
+      "category": "cuaca",
+      "file": "langit-malam.png",
+      "width": 1200,
+      "height": 1800,
+      "format": "4r",
+      "color": "#4b5fc0",
+      "slots": [
+        {
+          "x": 80,
+          "y": 330,
+          "w": 1040,
+          "h": 410,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 780,
+          "w": 1040,
+          "h": 410,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 1230,
+          "w": 1040,
+          "h": 410,
+          "radius": 44
+        }
+      ]
+    },
+    {
+      "id": "angin-sejuk",
+      "name": "Angin Sejuk",
+      "category": "cuaca",
+      "file": "angin-sejuk.png",
+      "width": 600,
+      "height": 1800,
+      "format": "strip",
+      "color": "#5ec8ff",
+      "slots": [
+        {
+          "x": 40,
+          "y": 235,
+          "w": 520,
+          "h": 320,
+          "radius": 30
+        },
+        {
+          "x": 40,
+          "y": 591,
+          "w": 520,
+          "h": 320,
+          "radius": 30
+        },
+        {
+          "x": 40,
+          "y": 947,
+          "w": 520,
+          "h": 320,
+          "radius": 30
+        },
+        {
+          "x": 40,
+          "y": 1303,
+          "w": 520,
+          "h": 320,
+          "radius": 30
+        }
+      ]
+    },
+    {
+      "id": "aqhi-biru",
+      "name": "Udara Bersih (AQHI 1-3)",
+      "category": "aqhi",
+      "file": "aqhi-biru.png",
+      "width": 1200,
+      "height": 1800,
+      "format": "4r",
+      "color": "#01cbff",
+      "slots": [
+        {
+          "x": 80,
+          "y": 340,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 340,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 940,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 940,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        }
+      ]
+    },
+    {
+      "id": "aqhi-kuning",
+      "name": "Waspada (AQHI 4-6)",
+      "category": "aqhi",
+      "file": "aqhi-kuning.png",
+      "width": 1200,
+      "height": 1800,
+      "format": "4r",
+      "color": "#ffcb00",
+      "slots": [
+        {
+          "x": 80,
+          "y": 340,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 340,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 940,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 940,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        }
+      ]
+    },
+    {
+      "id": "aqhi-merah",
+      "name": "Awas Polusi (AQHI 7-10+)",
+      "category": "aqhi",
+      "file": "aqhi-merah.png",
+      "width": 1200,
+      "height": 1800,
+      "format": "4r",
+      "color": "#fe0002",
+      "slots": [
+        {
+          "x": 80,
+          "y": 340,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 340,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 80,
+          "y": 940,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        },
+        {
+          "x": 620,
+          "y": 940,
+          "w": 500,
+          "h": 560,
+          "radius": 44
+        }
+      ]
+    },
+    {
+      "id": "pesta-sains",
+      "name": "Pesta Sains",
+      "category": "pesta",
+      "file": "pesta-sains.png",
+      "width": 1200,
+      "height": 1200,
+      "format": "square",
+      "color": "#ff6fb5",
+      "slots": [
+        {
+          "x": 60,
+          "y": 215,
+          "w": 330,
+          "h": 300,
+          "radius": 36
+        },
+        {
+          "x": 435,
+          "y": 215,
+          "w": 330,
+          "h": 300,
+          "radius": 36
+        },
+        {
+          "x": 810,
+          "y": 215,
+          "w": 330,
+          "h": 300,
+          "radius": 36
+        },
+        {
+          "x": 60,
+          "y": 555,
+          "w": 520,
+          "h": 390,
+          "radius": 36
+        },
+        {
+          "x": 620,
+          "y": 555,
+          "w": 520,
+          "h": 390,
+          "radius": 36
+        }
+      ]
+    },
+    {
+      "id": "kunjungan-lab",
+      "name": "Kunjungan Lab",
+      "category": "pesta",
+      "file": "kunjungan-lab.png",
+      "width": 1200,
+      "height": 1200,
+      "format": "square",
+      "color": "#ffb800",
+      "slots": [
+        {
+          "x": 60,
+          "y": 240,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        },
+        {
+          "x": 620,
+          "y": 240,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        },
+        {
+          "x": 60,
+          "y": 650,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        },
+        {
+          "x": 620,
+          "y": 650,
+          "w": 520,
+          "h": 370,
+          "radius": 40
+        }
+      ]
+    },
+    {
+      "id": "juara-peneliti",
+      "name": "Juara Peneliti",
+      "category": "pesta",
+      "file": "juara-peneliti.png",
+      "width": 600,
+      "height": 1800,
+      "format": "strip",
+      "color": "#ffb800",
       "slots": [
         {
           "x": 40,
