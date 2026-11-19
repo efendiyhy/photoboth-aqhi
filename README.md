@@ -63,10 +63,17 @@ journalctl -u aqhi-photobooth -f       # log
 | Variabel | Default | Keterangan |
 |---|---|---|
 | `PORT` | `8080` | Jangan `5000`. `80` juga bisa. |
-| `CAMERA_DEVICES` | `/dev/video0` | Beberapa kamera dipisah koma: `/dev/video0,/dev/video2` (muncul tombol *Ganti Kamera*). |
+| `CAMERA_DEVICES` | `/dev/video0` | Beberapa kamera dipisah koma: `/dev/video0,/dev/video2` (muncul tombol *Ganti Kamera*). Bisa juga URL stream program lain yang sudah memegang kamera, mis. `http://127.0.0.1:5000/video/raw` (lihat di bawah). |
 | `CAMERA_SIZE` | `1280x720` | Resolusi yang didukung kamera (mis. `1920x1080`). |
 | `CAMERA_FPS` | `15` | Naikkan bila kamera & CPU kuat. |
 | `CAMERA_INPUT` | `mjpeg` | Isi `auto` jika kamera tidak punya format MJPG (CPU lebih tinggi). |
+
+**Kamera sudah dipakai program lain?** Kamera USB hanya bisa dibuka satu program. Jika program lain (mis. di port 5000) sudah memegang kamera dan menyediakan stream video, arahkan photobooth ke stream itu, bukan ke `/dev/video0`:
+```bash
+sudo sed -i 's|^CAMERA_DEVICES=.*|CAMERA_DEVICES=http://127.0.0.1:5000/video/raw|' /etc/default/aqhi-photobooth
+sudo systemctl restart aqhi-photobooth
+```
+`CAMERA_SIZE` tidak berlaku untuk sumber URL (mengikuti ukuran stream aslinya).
 
 ### d. Hotspot
 Jika Orange Pi **sudah** menjadi hotspot, tidak perlu apa-apa. Cek IP-nya: `ip -4 addr show`. Jika belum: `sudo bash scripts/setup-hotspot.sh "NAMA" "SANDI"` (memakai NetworkManager, IP `10.42.0.1`).

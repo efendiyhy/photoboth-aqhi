@@ -13,6 +13,7 @@
  * Env: PORT=8080  CAMERA_DEVICES=/dev/video0[,/dev/video2]  CAMERA_SIZE=1280x720  CAMERA_FPS=15
  *      CAMERA_INPUT=mjpeg|auto   (auto = biarkan ffmpeg memilih format, untuk kamera non-MJPEG)
  *      CAMERA_DEVICES=test  -> pola uji tanpa kamera (untuk pengembangan)
+ *      CAMERA_DEVICES=http://127.0.0.1:5000/video/raw -> baca stream dari program lain yang memegang kamera
  */
 'use strict';
 
@@ -61,8 +62,15 @@ class Camera {
     this.startedAt = 0;
   }
 
+  isUrl() { return /^https?:\/\//i.test(this.device); }
+
   args() {
     const base = ['-hide_banner', '-loglevel', 'error', '-nostdin'];
+    if (this.isUrl()) { // sumber stream HTTP milik program lain (mis. http://127.0.0.1:5000/video/raw)
+      return base.concat(['-fflags', 'nobuffer', '-flags', 'low_delay',
+        '-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '2',
+        '-i', this.device, '-an', '-r', FPS, '-c:v', 'mjpeg', '-q:v', '3', '-pix_fmt', 'yuvj420p', '-f', 'mjpeg', 'pipe:1']);
+    }
     if (this.device === 'test') {
       return base.concat(['-re', '-f', 'lavfi', '-i', 'testsrc2=size=' + SIZE + ':rate=' + FPS,
         '-c:v', 'mjpeg', '-q:v', '4', '-f', 'mjpeg', 'pipe:1']);
@@ -100,7 +108,7 @@ class Camera {
       if (this.proc === p) this.proc = null;
       this.frame = null;
       if (err.trim()) this.lastError = err.trim().split('\n').pop();
-      if (quick && this.mode === 0 && this.device !== 'test' && !this.frameAt) {
+      if (quick && this.mode === 0 && this.device !== 'test' && !this.isUrl() && !this.frameAt) {
         this.mode = 1; // kamera tidak mendukung MJPEG -> coba format bawaan + encode
         console.log('[' + this.device + '] MJPEG tidak didukung, beralih ke mode encode');
         if (this.wanted()) this.start();
