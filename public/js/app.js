@@ -35,21 +35,50 @@
   }
   function show(name) {
     Object.keys(screens).forEach(function (k) { screens[k].classList.toggle('active', k === name); });
+    document.body.setAttribute('data-screen', name);
     window.scrollTo(0, 0);
   }
 
   var actx = null;
+  function getCtx() {
+    try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) { actx = null; }
+    return actx;
+  }
+  function unlockAudio() { getCtx(); } // dipanggil dari tap pengguna supaya iOS/Android mengizinkan suara
+
   function beep(freq, dur, vol) {
     if (!state.sound) return;
+    var ctx = getCtx(); if (!ctx) return;
     try {
-      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      var o = actx.createOscillator(), g = actx.createGain();
+      var o = ctx.createOscillator(), g = ctx.createGain();
       o.type = 'sine'; o.frequency.value = freq; g.gain.value = vol || 0.12;
-      o.connect(g); g.connect(actx.destination);
-      o.start(); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
-      o.stop(actx.currentTime + dur);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+      o.stop(ctx.currentTime + dur);
     } catch (e) {}
   }
+
+  // Suara "cekrek" kamera: dua klik mekanis (noise terfilter) + dentuman kecil
+  function playShutter(ctx, dest, t) {
+    var len = Math.floor(ctx.sampleRate * 0.12), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    [[0, 3200, 0.03, 0.9], [0.07, 1800, 0.05, 0.75]].forEach(function (c) {
+      var src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      src.buffer = buf; f.type = 'bandpass'; f.frequency.value = c[1]; f.Q.value = 0.9;
+      g.gain.setValueAtTime(c[3], t + c[0]); g.gain.exponentialRampToValueAtTime(0.001, t + c[0] + c[2]);
+      src.connect(f); f.connect(g); g.connect(dest); src.start(t + c[0]); src.stop(t + c[0] + c[2] + 0.02);
+    });
+    var o = ctx.createOscillator(), og = ctx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(90, t + 0.06);
+    og.gain.setValueAtTime(0.5, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+    o.connect(og); og.connect(dest); o.start(t); o.stop(t + 0.08);
+  }
+  function shutter() {
+    if (!state.sound) return;
+    var ctx = getCtx(); if (!ctx) return;
+    try { playShutter(ctx, ctx.destination, ctx.currentTime); } catch (e) {}
+  }
+  window.__aqhiPlayShutter = playShutter; // untuk pengujian
 
   // ---------- efek foto ----------
   // Semua efek memakai pixel-processing canvas (jalan di semua browser). Efek 'glow' butuh ctx.filter, hanya ditampilkan bila didukung.
@@ -213,9 +242,8 @@
   // ---------- kamera ----------
   function setBoxRatio(slot) {
     var box = $('cam-box');
-    var ratio = slot.w / slot.h;
     box.style.aspectRatio = slot.w + ' / ' + slot.h;
-    box.style.width = 'min(100%, ' + (Math.round(ratio * 52 * 100) / 100) + 'vh)';
+    box.style.setProperty('--ratio', String(slot.w / slot.h));
   }
 
   function stopStream() {
@@ -339,7 +367,7 @@
 
   function doFlash() {
     var f = $('flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
-    beep(1100, 0.18, 0.18);
+    shutter();
   }
 
   async function runSequence() {
@@ -461,6 +489,7 @@
     });
 
     $('btn-start').addEventListener('click', function () {
+      unlockAudio();
       if (state.running) { state.cancel = true; return; }
       if (!state.streamOk) return startCamera().then(function (ok) { if (ok) runSequence(); });
       runSequence();
