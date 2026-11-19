@@ -38,4 +38,4 @@ echo "address=/photobooth.lab/10.42.0.1" > /etc/NetworkManager/dnsmasq-shared.d/
 nmcli con up "$CON"
 echo
 echo "Hotspot aktif:  SSID=$SSID  PASS=$PASS  IFACE=$IFACE"
-echo "Buka dari HP :  http://10.42.0.1:8080   atau   https://10.42.0.1:8443 (kamera)"
+echo "Buka dari HP :  http://10.42.0.1:8080"

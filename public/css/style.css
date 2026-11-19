@@ -30,8 +30,6 @@ body {
 .screen.active { display: block; animation: pop .35s ease; }
 @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
 
-.banner { position: relative; z-index: 5; background: #fff4c2; color: #6b4b00; padding: 10px 14px; font-size: 14px; text-align: center; border-bottom: 3px solid var(--sun); }
-.banner a { color: var(--navy); font-weight: 800; }
 
 .hero { text-align: center; padding: 10px 6px 4px; }
 .hero.compact { padding-bottom: 0; }
@@ -79,8 +77,8 @@ body {
 /* kamera */
 .cam-wrap { display: flex; justify-content: center; }
 .cam-box { position: relative; background: #0d2b40; border: 6px solid #fff; border-radius: 28px; overflow: hidden; box-shadow: 0 8px 0 var(--navy), 0 14px 24px rgba(0,0,0,.2); aspect-ratio: 4 / 3; width: 100%; }
-.cam-box video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.cam-box video.mirror { transform: scaleX(-1); }
+.cam-box img#feed { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cam-box img#feed.mirror { transform: scaleX(-1); }
 .countdown { position: absolute; inset: 0; display: grid; place-items: center; font-size: min(38vw, 220px); font-weight: 900; color: #fff; text-shadow: 0 6px 0 var(--navy), 0 0 30px rgba(0,0,0,.4); -webkit-text-stroke: 4px var(--navy); pointer-events: none; }
 .countdown.tick { animation: tick .9s ease-out; }
 @keyframes tick { 0% { transform: scale(1.6); opacity: 0; } 25% { opacity: 1; } 100% { transform: scale(.85); opacity: .9; } }

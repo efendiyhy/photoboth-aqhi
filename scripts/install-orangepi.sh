@@ -29,20 +29,23 @@ command -v openssl >/dev/null || apt-get install -y openssl
 NODE_BIN="$(command -v node)"
 echo "==> Node: $($NODE_BIN -v)"
 
-# 2. Sertifikat HTTPS (untuk akses kamera dari HP)
-if [ ! -f "$APP_DIR/certs/server.crt" ]; then
-  echo "==> Membuat sertifikat HTTPS self-signed"
-  sudo -u "$RUN_USER" bash "$APP_DIR/scripts/gen-cert.sh"
+# 2. ffmpeg (membaca kamera USB di Orange Pi) + izin akses kamera
+if ! command -v ffmpeg >/dev/null; then
+  echo "==> Memasang ffmpeg"
+  apt-get update
+  apt-get install -y ffmpeg
 fi
+usermod -aG video "$RUN_USER" || true
 
-# 3. Konfigurasi port (default 8080 / 8443)
-if [ ! -f /etc/default/aqhi-photobooth ]; then
-  cat > /etc/default/aqhi-photobooth <<CFG
-# Port aplikasi. JANGAN pakai 5000 (sudah dipakai layanan lain).
-PORT=8080
-HTTPS_PORT=8443
-CFG
-fi
+# 3. Konfigurasi (port & kamera). Nilai yang sudah ada TIDAK ditimpa.
+CFG=/etc/default/aqhi-photobooth
+touch "$CFG"
+add_cfg() { grep -q "^$1=" "$CFG" || echo "$1=$2" >> "$CFG"; }
+add_cfg PORT 8080
+add_cfg CAMERA_DEVICES /dev/video0
+add_cfg CAMERA_SIZE 1280x720
+add_cfg CAMERA_FPS 15
+sed -i '/^HTTPS_PORT=/d' "$CFG"
 
 # 4. Service systemd
 sed -e "s|__USER__|$RUN_USER|g" -e "s|__APP_DIR__|$APP_DIR|g" -e "s|__NODE__|$NODE_BIN|g" \
@@ -53,6 +56,6 @@ sleep 1
 systemctl --no-pager --lines=5 status aqhi-photobooth.service || true
 
 echo
-echo "Selesai! Photobooth aktif di port 8080 (HTTP) dan 8443 (HTTPS)."
-echo "Langkah berikut (opsional) - aktifkan hotspot:"
-echo "  sudo bash $APP_DIR/scripts/setup-hotspot.sh \"AQHI-Photobooth\" \"aqhi12345\""
+echo "Selesai! Photobooth aktif di port 8080."
+echo "Cek kamera : ls /dev/video*    |    curl -s localhost:8080/api/status"
+echo "Buka dari HP yang tersambung ke hotspot:  http://<IP-ORANGE-PI>:8080"

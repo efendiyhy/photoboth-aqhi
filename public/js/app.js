@@ -10,14 +10,15 @@
     tpl: null,
     tplImg: null,
     photos: [],          // canvas per slot (hanya di memori)
-    facing: 'user',
     mirror: true,
     sound: true,
     timer: 5,
     stream: null,
     running: false,
     cancel: false,
-    fallback: false,
+    streamOk: false,
+    camCount: 1,
+    camIndex: 0,
     resultBlob: null
   };
 
@@ -45,23 +46,6 @@
       o.start(); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
       o.stop(actx.currentTime + dur);
     } catch (e) {}
-  }
-
-  // ---------- banner HTTPS ----------
-  function checkSecure() {
-    var hasCam = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-    state.fallback = !hasCam;
-    if (window.isSecureContext && hasCam) return;
-    fetch('/api/info', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (info) {
-      var b = $('banner');
-      if (info.httpsPort && location.protocol === 'http:') {
-        var url = 'https://' + location.hostname + ':' + info.httpsPort + '/';
-        b.innerHTML = '📷 Kamera butuh koneksi aman. <a href="' + url + '">Buka versi HTTPS</a> (pilih "Lanjutkan" bila ada peringatan sertifikat).';
-      } else {
-        b.textContent = '📷 Browser memblokir kamera di alamat ini. Aktifkan HTTPS (lihat README) atau gunakan tombol kamera bawaan HP.';
-      }
-      b.hidden = false;
-    }).catch(function () {});
   }
 
   // ---------- template ----------
@@ -109,8 +93,9 @@
   }
 
   function stopStream() {
-    if (state.stream) { state.stream.getTracks().forEach(function (t) { t.stop(); }); state.stream = null; }
-    $('video').srcObject = null;
+    state.streamOk = false;
+    var f = $('feed');
+    f.removeAttribute('src'); // menutup koneksi -> server mematikan kamera saat idle
   }
 
   function msg(text) {
@@ -119,32 +104,33 @@
     m.textContent = text; m.hidden = false;
   }
 
+  // Preview langsung dari kamera yang terpasang di Orange Pi (MJPEG)
   function startCamera() {
     stopStream();
-    if (state.fallback) { msg('Kamera langsung tidak tersedia di alamat ini. Tekan "Ambil Foto" untuk memakai kamera bawaan HP.'); return Promise.resolve(false); }
     msg('Menyalakan kamera… 📷');
-    var constraints = { audio: false, video: { facingMode: { ideal: state.facing }, width: { ideal: 1920 }, height: { ideal: 1080 } } };
-    return navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
-      state.stream = stream;
-      var v = $('video'); v.srcObject = stream;
-      var p = v.play(); if (p && p.catch) p.catch(function () {});
-      applyMirror();
-      msg('');
-      return true;
-    }).catch(function (err) {
-      var text = 'Kamera tidak bisa diakses. ';
-      if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) text += 'Izinkan akses kamera pada browser (ikon gembok di address bar), lalu muat ulang halaman.';
-      else if (err && err.name === 'NotFoundError') text += 'Tidak ada kamera ditemukan.';
-      else text += 'Coba tutup aplikasi lain yang memakai kamera.';
-      msg(text + ' Kamu juga bisa menekan "Ambil Foto" untuk memakai kamera bawaan HP.');
-      state.fallback = true;
-      updateStartLabel();
-      return false;
+    var f = $('feed');
+    return new Promise(function (resolve) {
+      var done = false;
+      var finish = function (ok, text) {
+        if (done) return; done = true; clearTimeout(timer);
+        f.onload = f.onerror = null;
+        state.streamOk = ok;
+        if (ok) { applyMirror(); msg(''); }
+        else {
+          stopStream();
+          msg(text || 'Kamera di Orange Pi tidak terdeteksi. Pastikan kamera USB terpasang, lalu tekan tombol Mulai untuk mencoba lagi.');
+        }
+        resolve(ok);
+      };
+      var timer = setTimeout(function () { finish(false); }, 10000);
+      f.onload = function () { finish(true); };
+      f.onerror = function () { finish(false); };
+      f.src = 'api/stream?cam=' + state.camIndex + '&t=' + Date.now();
     });
   }
 
   function applyMirror() {
-    $('video').classList.toggle('mirror', state.mirror);
+    $('feed').classList.toggle('mirror', state.mirror);
     var b = $('btn-mirror');
     b.setAttribute('aria-pressed', String(state.mirror));
     b.textContent = '🪞 Mirror: ' + (state.mirror ? 'ON' : 'OFF');
@@ -168,8 +154,7 @@
   function updateStartLabel() {
     var b = $('btn-start');
     if (state.running) { b.textContent = '✋ Batal'; return; }
-    if (state.fallback) b.textContent = '📸 Ambil Foto ke-' + (state.photos.length + 1);
-    else b.textContent = '✨ Mulai Foto!';
+    b.textContent = '✨ Mulai Foto!';
   }
 
   function startSession() {
@@ -196,9 +181,19 @@
     return c;
   }
 
+  // Ambil 1 frame segar dari kamera Orange Pi (tidak disimpan di server)
   function captureFrame(slot) {
-    var v = $('video');
-    return coverCanvas(v, v.videoWidth, v.videoHeight, slot, state.mirror);
+    return fetch('api/snapshot?cam=' + state.camIndex + '&t=' + Date.now(), { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error('snapshot');
+      return r.blob();
+    }).then(function (blob) {
+      return new Promise(function (resolve, reject) {
+        var url = URL.createObjectURL(blob), img = new Image();
+        img.onload = function () { URL.revokeObjectURL(url); resolve(coverCanvas(img, img.naturalWidth, img.naturalHeight, slot, state.mirror)); };
+        img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('decode')); };
+        img.src = url;
+      });
+    });
   }
 
   function countdown(sec) {
@@ -231,7 +226,8 @@
         await countdown(state.timer);
         if (state.cancel) break;
         doFlash();
-        state.photos[i] = captureFrame(slots[i]);
+        try { state.photos[i] = await captureFrame(slots[i]); }
+        catch (e) { state.cancel = true; toast('Gagal mengambil foto dari kamera. Coba lagi.', 4000); break; }
         renderThumbs(i + 1 < slots.length ? i + 1 : i);
         await sleep(900);
       }
@@ -245,28 +241,6 @@
   function setControls(disabled) {
     ['btn-flip', 'btn-back'].forEach(function (id) { $(id).disabled = disabled; });
     var chips = document.querySelectorAll('.chip'); for (var i = 0; i < chips.length; i++) chips[i].disabled = disabled;
-  }
-
-  // fallback: kamera bawaan HP lewat <input capture>
-  function takeViaFile() {
-    var input = $('file-fallback');
-    input.value = '';
-    input.onchange = function () {
-      var f = input.files && input.files[0]; if (!f) return;
-      var url = URL.createObjectURL(f);
-      var img = new Image();
-      img.onload = function () {
-        var i = state.photos.length, slot = state.tpl.slots[i];
-        state.photos[i] = coverCanvas(img, img.naturalWidth, img.naturalHeight, slot, false);
-        URL.revokeObjectURL(url);
-        input.value = '';
-        if (state.photos.length === state.tpl.slots.length) finish();
-        else { setBoxRatio(state.tpl.slots[state.photos.length]); renderThumbs(); updateStartLabel(); }
-      };
-      img.onerror = function () { URL.revokeObjectURL(url); toast('Gambar tidak bisa dibaca, coba lagi.'); };
-      img.src = url;
-    };
-    input.click();
   }
 
   // ---------- gabung & preview ----------
@@ -355,16 +329,12 @@
 
     $('btn-start').addEventListener('click', function () {
       if (state.running) { state.cancel = true; return; }
-      if (state.fallback || !state.stream) {
-        if (state.fallback) return takeViaFile();
-        return startCamera().then(function (ok) { if (ok) runSequence(); });
-      }
+      if (!state.streamOk) return startCamera().then(function (ok) { if (ok) runSequence(); });
       runSequence();
     });
     $('btn-mirror').addEventListener('click', function () { state.mirror = !state.mirror; applyMirror(); });
     $('btn-flip').addEventListener('click', function () {
-      state.facing = state.facing === 'user' ? 'environment' : 'user';
-      state.mirror = state.facing === 'user';
+      state.camIndex = (state.camIndex + 1) % state.camCount;
       startCamera();
     });
     $('btn-sound').addEventListener('click', function () {
@@ -378,7 +348,10 @@
     $('btn-newtpl').addEventListener('click', backToTemplates);
     window.addEventListener('pagehide', stopStream);
 
-    checkSecure();
+    fetch('api/status', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (s) {
+      state.camCount = s.cameras.length;
+      $('btn-flip').hidden = state.camCount < 2;
+    }).catch(function () {});
     fetch('templates/templates.json', { cache: 'no-cache' })
       .then(function (r) { return r.json(); })
       .then(function (cfg) { state.templates = cfg.templates; renderTemplates(); })
