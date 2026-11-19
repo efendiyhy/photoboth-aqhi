@@ -2,7 +2,7 @@
 """
 Generator template Photobooth AQHI Lab.
 
-Menghasilkan 10 template PNG (slot foto transparan) + public/templates/templates.json.
+Menghasilkan 18 template PNG (slot foto transparan) + public/templates/templates.json.
 Jalankan ulang jika ingin mengubah desain bawaan:
 
     pip install pillow
@@ -13,6 +13,7 @@ dan mengedit koordinat slot di templates.json (lihat README.md).
 """
 import json
 import math
+import zlib
 import os
 import random
 from contextlib import contextmanager
@@ -386,6 +387,150 @@ def rainbow(p, cx, cy, r, band):
         p.arc(cx, cy, rad - band / 2.0, 180, 360, col, band + 1)
 
 
+
+def _shade(hexc, k=0.8):
+    r, g, b = hexrgb(hexc)
+    return "#%02x%02x%02x" % (int(r * k), int(g * k), int(b * k))
+
+
+def magnifier(p, cx, cy, r):
+    p.line([(cx + 0.35 * r, cy + 0.35 * r), (cx + 0.9 * r, cy + 0.9 * r)], "#7a4c24", r * 0.2)
+    p.circ(cx - 0.1 * r, cy - 0.1 * r, 0.62 * r, fill="#d9f4ff", outline="#2b8fb5", w=max(r * 0.12, 3))
+    p.arc(cx - 0.1 * r, cy - 0.1 * r, 0.42 * r, 200, 260, WHITE, max(r * 0.1, 2))
+    sparkle(p, cx + 0.1 * r, cy + 0.05 * r, r * 0.16, "#ffffffcc")
+
+
+def clipboard(p, cx, cy, r):
+    p.rr(cx - 0.6 * r, cy - 0.85 * r, 1.2 * r, 1.65 * r, 0.14 * r, fill="#c98b4e", outline="#8a5a2b", ow=max(r * 0.05, 2))
+    p.rr(cx - 0.48 * r, cy - 0.68 * r, 0.96 * r, 1.4 * r, 0.06 * r, fill=WHITE)
+    p.rr(cx - 0.25 * r, cy - 0.97 * r, 0.5 * r, 0.24 * r, 0.07 * r, fill="#9aa5b1", outline="#5b6672", ow=2)
+    for i, col in enumerate((AQHI[0], AQHI[3], AQHI[5], AQHI[7])):
+        y = cy - 0.4 * r + i * 0.28 * r
+        p.circ(cx - 0.3 * r, y, 0.07 * r, fill=col)
+        p.rr(cx - 0.15 * r, y - 0.04 * r, (0.5 - i * 0.07) * r, 0.08 * r, 0.04 * r, fill=col)
+
+
+def person(p, cx, cy, r, skin="#ffdcb8", hair="#5a3a22", style="short", coat=WHITE, shirt="#8fd8ff",
+           acc=(), hold=None):
+    """Ilmuwan/peneliti/dokter chibi (setengah badan). r = setengah tinggi ikon."""
+    hr, hx, hy = 0.5 * r, cx, cy - 0.36 * r
+    ol = "#9fb2c6" if coat == WHITE else _shade(coat, 0.7)
+    skin_d = _shade(skin, 0.88)
+    # badan / jas
+    p.rr(cx - 0.8 * r, cy + 0.12 * r, 1.6 * r, 0.98 * r, 0.36 * r, fill=coat, outline=ol, ow=max(r * 0.035, 2))
+    p.poly([(cx - 0.22 * r, cy + 0.14 * r), (cx + 0.22 * r, cy + 0.14 * r), (cx, cy + 0.66 * r)], fill=shirt)
+    for sx in (-1, 1):
+        p.poly([(cx + sx * 0.26 * r, cy + 0.1 * r), (cx + sx * 0.04 * r, cy + 0.68 * r), (cx + sx * 0.36 * r, cy + 0.6 * r)],
+               fill=coat, outline=ol, w=max(r * 0.03, 1.6))
+    for k in (0.8, 0.96):
+        p.circ(cx, cy + k * r, 0.035 * r, fill="#b5c3d1")
+    p.rr(cx + 0.34 * r, cy + 0.62 * r, 0.3 * r, 0.3 * r, 0.05 * r, fill=coat, outline=ol, ow=max(r * 0.03, 1.5))
+    p.line([(cx + 0.44 * r, cy + 0.5 * r), (cx + 0.44 * r, cy + 0.7 * r)], "#ff5c8a", r * 0.05)
+    p.line([(cx + 0.54 * r, cy + 0.52 * r), (cx + 0.54 * r, cy + 0.7 * r)], "#3fa0ff", r * 0.05)
+    if "stethoscope" in acc:
+        p.arc(cx, cy + 0.12 * r, 0.36 * r, 0, 180, "#4a5560", r * 0.06)
+        p.line([(cx - 0.36 * r, cy + 0.14 * r), (cx - 0.3 * r, cy + 0.7 * r), (cx - 0.1 * r, cy + 0.86 * r)], "#4a5560", r * 0.05)
+        p.circ(cx - 0.1 * r, cy + 0.88 * r, 0.1 * r, fill="#cfd8e0", outline="#4a5560", w=max(r * 0.03, 1.5))
+    p.rr(cx - 0.12 * r, cy - 0.04 * r, 0.24 * r, 0.22 * r, 0.05 * r, fill=skin_d)
+    # rambut belakang
+    if style == "pigtails":
+        for sx in (-1, 1):
+            p.circ(hx + sx * 0.66 * r, hy + 0.16 * r, 0.22 * r, fill=hair)
+            p.circ(hx + sx * 0.56 * r, hy - 0.08 * r, 0.06 * r, fill="#ff6f91")
+    elif style == "long":
+        p.rr(hx - hr * 1.1, hy - 0.2 * r, hr * 2.2, 0.95 * r, 0.4 * r, fill=hair)
+    elif style == "bun":
+        p.circ(hx, hy - hr * 1.15, 0.24 * r, fill=hair)
+    # kepala
+    p.circ(hx, hy, hr, fill=skin, outline=skin_d, w=max(r * 0.035, 2))
+    # rambut depan / topi
+    if "hardhat" in acc:
+        p.d.pieslice([(hx - hr * 1.08) * S, (hy - hr * 1.12) * S, (hx + hr * 1.08) * S, (hy + hr * 1.0) * S], 180, 360,
+                     fill="#ffcf2e", outline="#d99a00", width=int(2.5 * S))
+        p.rr(hx - hr * 1.25, hy - hr * 0.2, hr * 2.5, 0.13 * r, 0.06 * r, fill="#ffcf2e", outline="#d99a00", ow=2)
+        p.rr(hx - 0.07 * r, hy - hr * 1.08, 0.14 * r, hr * 0.55, 0.04 * r, fill="#ffe27a")
+    else:
+        p.d.pieslice([(hx - hr * 1.04) * S, (hy - hr * 1.06) * S, (hx + hr * 1.04) * S, (hy + hr * 0.94) * S], 190, 350, fill=hair)
+        for dx in (-0.3, -0.1, 0.12, 0.32):
+            p.circ(hx + dx * r, hy - 0.3 * r + abs(dx) * 0.1 * r, 0.14 * r, fill=hair)
+        if style == "curly":
+            for a in range(190, 351, 32):
+                p.circ(hx + hr * 1.02 * math.cos(math.radians(a)), hy + hr * 1.02 * math.sin(math.radians(a)), 0.16 * r, fill=hair)
+    # wajah
+    ex, ey, er = 0.19 * r, hy + 0.06 * r, 0.055 * r
+    for sx in (-1, 1):
+        p.circ(hx + sx * ex, ey, er, fill=DARK)
+        p.circ(hx + sx * ex - er * 0.3, ey - er * 0.35, er * 0.4, fill=WHITE)
+        p.ell(hx + sx * 0.33 * r, ey + 0.14 * r, 0.09 * r, 0.055 * r, fill="#ff9fb0")
+    p.arc(hx, ey + 0.1 * r, 0.1 * r, 20, 160, DARK, max(r * 0.03, 1.6))
+    if "glasses" in acc:
+        for sx in (-1, 1):
+            p.circ(hx + sx * ex, ey, 0.14 * r, outline="#2b3a47", w=max(r * 0.035, 2))
+        p.line([(hx - 0.05 * r, ey), (hx + 0.05 * r, ey)], "#2b3a47", max(r * 0.03, 1.6))
+    if "goggles" in acc:
+        p.rr(hx - hr * 1.0, hy - 0.4 * r, hr * 2.0, 0.13 * r, 0.05 * r, fill="#ff8a2b")
+        for sx in (-1, 1):
+            p.circ(hx + sx * 0.2 * r, hy - 0.34 * r, 0.14 * r, fill="#bfe8ff", outline="#4a5560", w=max(r * 0.04, 2))
+    if "headmirror" in acc:
+        p.rr(hx - hr * 1.0, hy - 0.44 * r, hr * 2.0, 0.08 * r, 0.03 * r, fill="#e0e6ec")
+        p.circ(hx + 0.12 * r, hy - 0.42 * r, 0.14 * r, fill="#cfd8e0", outline="#7d8fa3", w=2)
+        p.circ(hx + 0.12 * r, hy - 0.42 * r, 0.05 * r, fill="#7d8fa3")
+    if "mask" in acc:
+        p.rr(hx - hr * 0.8, hy + 0.12 * r, hr * 1.6, 0.34 * r, 0.12 * r, fill="#bfe8ff", outline="#5ab2e6", ow=2)
+    # item yang dipegang
+    if hold:
+        hxx, hyy = cx + 0.78 * r, cy + 0.5 * r
+        if hold == "flask":
+            flask(p, hxx, hyy - 0.28 * r, 0.34 * r)
+        elif hold == "clipboard":
+            clipboard(p, hxx, hyy - 0.25 * r, 0.36 * r)
+        elif hold == "magnifier":
+            magnifier(p, hxx - 0.05 * r, hyy - 0.3 * r, 0.36 * r)
+        p.circ(hxx, hyy + 0.02 * r, 0.11 * r, fill=skin, outline=skin_d, w=1.5)
+
+
+def robot(p, cx, cy, r, col="#9ad7ff", dark="#2b6fa8"):
+    out = dark
+    p.line([(cx, cy - 0.58 * r), (cx, cy - 0.9 * r)], out, r * 0.06)
+    p.circ(cx, cy - 0.95 * r, 0.1 * r, fill="#ff5c8a", outline=out, w=2)
+    p.rr(cx - 0.5 * r, cy + 0.5 * r, 1.0 * r, 0.5 * r, 0.14 * r, fill=col, outline=out, ow=max(r * 0.04, 2))
+    for i, c in enumerate((AQHI[0], AQHI[4], AQHI[7])):
+        p.circ(cx + (i - 1) * 0.28 * r, cy + 0.75 * r, 0.09 * r, fill=c, outline=out, w=1.5)
+    for sx in (-1, 1):
+        p.rr(cx + sx * 0.78 * r - 0.1 * r, cy - 0.15 * r, 0.2 * r, 0.4 * r, 0.06 * r, fill=col, outline=out, ow=2)
+    p.rr(cx - 0.72 * r, cy - 0.6 * r, 1.44 * r, 1.12 * r, 0.3 * r, fill=col, outline=out, ow=max(r * 0.045, 2))
+    p.rr(cx - 0.56 * r, cy - 0.45 * r, 1.12 * r, 0.8 * r, 0.2 * r, fill="#16324d")
+    for sx in (-1, 1):
+        p.circ(cx + sx * 0.25 * r, cy - 0.1 * r, 0.12 * r, fill="#6df0ff")
+        p.circ(cx + sx * 0.25 * r - 0.03 * r, cy - 0.14 * r, 0.04 * r, fill=WHITE)
+        p.ell(cx + sx * 0.42 * r, cy + 0.14 * r, 0.08 * r, 0.05 * r, fill="#ff7fa3")
+    p.arc(cx, cy + 0.0 * r, 0.14 * r, 20, 160, "#6df0ff", max(r * 0.04, 2))
+
+
+def smog(p, cx, cy, r):
+    gray, ol = "#aab4c0", "#5b6672"
+    cloud(p, cx, cy, r, fill=gray, outline=ol, with_face=False)
+    for sx in (-1, 1):
+        ex = cx - 0.05 * r + sx * 0.28 * r
+        p.circ(ex, cy + 0.12 * r, 0.14 * r, fill=WHITE, outline=ol, w=2)
+        p.circ(ex - sx * 0.02 * r, cy + 0.14 * r, 0.07 * r, fill=DARK)
+    p.line([(cx - 0.5 * r, cy - 0.12 * r), (cx - 0.12 * r, cy + 0.0 * r)], DARK, r * 0.07)
+    p.line([(cx + 0.4 * r, cy - 0.12 * r), (cx + 0.02 * r, cy + 0.0 * r)], DARK, r * 0.07)
+    p.arc(cx - 0.05 * r, cy + 0.52 * r, 0.18 * r, 200, 340, DARK, r * 0.06)
+    for dx, dy, rad in ((-1.0, -0.5, 0.07), (1.05, -0.3, 0.06), (0.8, 0.7, 0.05), (-0.9, 0.55, 0.06)):
+        p.circ(cx + dx * r, cy + dy * r, rad * r, fill=ol)
+
+
+def earth(p, cx, cy, r):
+    p.circ(cx, cy, r, fill="#4db8f0", outline="#1f7ab0", w=max(r * 0.06, 2.5))
+    for dx, dy, rx, ry in ((-0.45, -0.42, 0.25, 0.17), (0.5, -0.12, 0.2, 0.32), (-0.35, 0.55, 0.3, 0.16), (0.1, -0.7, 0.14, 0.09)):
+        p.ell(cx + dx * r, cy + dy * r, rx * r, ry * r, fill="#6fd47a")
+    p.ell(cx - 0.4 * r, cy - 0.45 * r, 0.1 * r, 0.16 * r, fill="#ffffff66")
+    face(p, cx, cy + 0.05 * r, r * 0.85)
+    leaf(p, cx - 0.12 * r, cy - 1.12 * r, 0.2 * r, ang=-40)
+    leaf(p, cx + 0.14 * r, cy - 1.12 * r, 0.2 * r, ang=-140)
+
+
 ICONS = {
     "sparkle": lambda p, x, y, r: sparkle(p, x, y, r, WHITE),
     "sparkle_y": lambda p, x, y, r: sparkle(p, x, y, r, SUN),
@@ -411,6 +556,18 @@ ICONS = {
     "microscope": lambda p, x, y, r: microscope(p, x, y, r),
     "umbrella": lambda p, x, y, r: umbrella(p, x, y, r),
     "flower": lambda p, x, y, r: flower(p, x, y, r),
+    "scientist": lambda p, x, y, r: person(p, x, y, r, hair="#4a3322", acc=("glasses", "goggles"), hold="flask", shirt="#8fd8ff"),
+    "scientist2": lambda p, x, y, r: person(p, x, y, r, skin="#f6c9a0", hair="#e0568a", style="pigtails", acc=("glasses",), hold="magnifier", shirt="#ffd1e3"),
+    "scientist3": lambda p, x, y, r: person(p, x, y, r, skin="#c98e63", hair="#2a2a35", style="curly", acc=("goggles",), hold="flask", shirt="#aef0c8"),
+    "researcher": lambda p, x, y, r: person(p, x, y, r, hair="#7a4a22", coat="#ffb347", shirt=WHITE, acc=("hardhat",), hold="clipboard"),
+    "doctor": lambda p, x, y, r: person(p, x, y, r, skin="#ffdcb8", hair="#3a2c2c", style="bun", coat=WHITE, shirt="#7fe3d4", acc=("stethoscope", "headmirror")),
+    "doctor2": lambda p, x, y, r: person(p, x, y, r, skin="#e8b48a", hair="#2a2a35", coat="#d6f5f0", shirt="#3fd6c4", acc=("stethoscope", "mask")),
+    "robot": lambda p, x, y, r: robot(p, x, y, r),
+    "robot2": lambda p, x, y, r: robot(p, x, y, r, col="#ffd28a", dark="#b36b00"),
+    "smog": lambda p, x, y, r: smog(p, x, y, r),
+    "earth": lambda p, x, y, r: earth(p, x, y, r),
+    "magnifier": lambda p, x, y, r: magnifier(p, x, y, r),
+    "clipboard": lambda p, x, y, r: clipboard(p, x, y, r),
 }
 
 
@@ -533,11 +690,13 @@ LAYOUTS = {
                 bar=(80, 1075, 1040, 70), caps=False),
     "sq4": dict(size=(1200, 1200), format="square", slots=mk([(60, 240, 520, 370), (620, 240, 520, 370), (60, 650, 520, 370), (620, 650, 520, 370)], 40),
                 bar=(80, 1085, 1040, 70), caps=False),
-    "sq5": dict(size=(1200, 1200), format="square", slots=mk([(60, 215, 340, 300), (430, 215, 340, 300), (800, 215, 340, 300), (60, 555, 520, 390), (620, 555, 520, 390)], 36),
+    "sq5": dict(size=(1200, 1200), format="square", slots=mk([(60, 215, 330, 300), (435, 215, 330, 300), (810, 215, 330, 300), (60, 555, 520, 390), (620, 555, 520, 390)], 36),
                 bar=(80, 1030, 1040, 74), caps=True),
 }
 
 # ---- 10 template ----------------------------------------------------------
+CHARS = {"scientist", "scientist2", "scientist3", "researcher", "doctor", "doctor2", "robot", "robot2", "smog", "earth"}
+
 TEMPLATES = [
     dict(id="awan-ceria", name="Awan Ceria", layout="strip3", bg=("#8fd8ff", "#eafaff"), accent="#4cc3f5", ui="#4cc3f5",
          title="AQHI LAB", sub="Air Quality Health Impact", tsize=96, tcol=WHITE, tstroke=NAVY, dots=WHITE,
@@ -546,11 +705,11 @@ TEMPLATES = [
     dict(id="lab-buddies", name="Lab Buddies", layout="strip4", bg=("#7fe8d6", "#e0fcf7"), accent="#2fc9b4", ui="#2fc9b4",
          title="AQHI LAB", sub="Sains Udara Bersih", tsize=78, tcol=WHITE, tstroke=DEEP_TEAL, dots=WHITE,
          hero=[("flask", 54, 80, 40), ("atom", 548, 84, 40), ("microscope", 300, 1790, 0)],
-         scatter=["molecule", "bubble", "sparkle", "tube", "drop", "sparkle_y"], stickers=["flask", "atom", "tube"]),
+         scatter=["molecule", "bubble", "sparkle", "tube", "drop", "sparkle_y"], stickers=["scientist", "flask", "atom", "scientist2"]),
     dict(id="paru-sehat", name="Paru-paru Sehat", layout="r3", bg=("#bfe9ff", "#fff0f5"), accent="#ff9bb8", ui="#ff7fa3",
          title="PARU-PARU SEHAT", sub="Hirup udara bersih, hidup lebih sehat!", tsize=96, tcol=WHITE, tstroke="#d84a77", dots=WHITE,
          hero=[("lungs", 140, 150, 100), ("lungs", 1060, 150, 100)],
-         scatter=["heart", "sparkle", "drop", "leaf", "cloud_nf", "bubble", "wind"], stickers=["heart", "lungs", "leaf"]),
+         scatter=["heart", "sparkle", "drop", "leaf", "cloud_nf", "bubble", "wind"], stickers=["doctor", "heart", "lungs", "doctor2"]),
     dict(id="clean-air-club", name="Clean Air Club", layout="r4", bg=("#b9f5d2", "#effff7"), accent="#4cc98a", ui="#4cc98a",
          title="CLEAN AIR CLUB", sub="Udara bersih untuk semua", tsize=104, tcol=WHITE, tstroke=LEAF_D, dots=WHITE,
          hero=[("tree", 120, 170, 90), ("tree", 1080, 170, 90), ("wind", 600, 1762, 0)],
@@ -566,19 +725,51 @@ TEMPLATES = [
     dict(id="sunny-breeze", name="Sunny Breeze", layout="sq4", bg=("#dff8ff", "#ffffff"), accent="#ffd84a", ui="#ffc21a",
          title="SUNNY BREEZE", sub="Langit cerah, udara segar", tsize=104, tcol=WHITE, tstroke="#2a9bd6", dots="#bfe6fb",
          hero=[("sun", 120, 110, 50), ("cloud", 1075, 100, 56)],
-         scatter=["wind", "flower", "sparkle_y", "bubble", "leaf", "cloud_nf", "heart"], stickers=["sun", "flower", "cloud", "wind"]),
+         scatter=["wind", "flower", "sparkle_y", "bubble", "leaf", "cloud_nf", "heart"], stickers=["earth", "sun", "flower", "cloud"]),
     dict(id="bubble-science", name="Bubble Science", layout="sq5", bg=("#5fe0cf", "#c9f7ee"), accent="#ffffff", ui="#1fc4b0",
          title="BUBBLE SCIENCE", sub="Eksperimen seru bersama AQHI Lab", tsize=96, tcol=WHITE, tstroke=DEEP_TEAL, dots="#aef0e5",
          hero=[("flask", 115, 100, 58), ("atom", 1085, 100, 58)],
-         scatter=["bubble", "bubble", "molecule", "sparkle", "tube", "drop", "sparkle_y"], stickers=["flask", "molecule", "atom", "bubble"]),
+         scatter=["bubble", "bubble", "molecule", "sparkle", "tube", "drop", "sparkle_y"], stickers=["scientist3", "flask", "molecule", "robot"]),
     dict(id="tree-power", name="Tree Power", layout="strip4", bg=("#a6f0c6", "#e6fcf4"), accent="#35b873", ui="#35b873",
          title="TREE POWER", sub="Pohon penyaring udara", tsize=68, tcol=WHITE, tstroke=LEAF_D, dots=WHITE,
          hero=[("tree", 58, 100, 44), ("tree", 542, 100, 44)],
-         scatter=["leaf", "leaf2", "sparkle", "drop", "flower", "cloud_nf", "wind"], stickers=["tree", "leaf", "flower"]),
+         scatter=["leaf", "leaf2", "sparkle", "drop", "flower", "cloud_nf", "wind"], stickers=["researcher", "tree", "leaf", "flower"]),
     dict(id="hujan-ceria", name="Hujan Ceria", layout="r4", bg=("#b7e3ff", "#eaf7ff"), accent="#6cc1f2", ui="#5eb8ef",
          title="HUJAN CERIA", sub="Hujan membersihkan udara", tsize=108, tcol=WHITE, tstroke="#2a74a8", dots=WHITE,
          hero=[("umbrella", 125, 190, 85), ("cloud", 1075, 160, 85)],
          scatter=["drop", "drop", "sparkle", "cloud_nf", "bubble", "heart", "umbrella"], stickers=["drop", "umbrella", "cloud", "heart"]),
+    dict(id="dr-sains", name="Dr. Sains", layout="r4", bg=("#cdbcff", "#f4efff"), accent="#9b7bff", ui="#9b7bff",
+         title="DR. SAINS", sub="Ilmuwan cilik peduli udara", tsize=112, tcol=WHITE, tstroke="#5b3fb5", dots="#e6dcff", subcol="#4b2f94",
+         hero=[("scientist", 130, 175, 95), ("scientist2", 1070, 175, 95)],
+         scatter=["sparkle", "star", "flask_p", "atom", "bubble", "magnifier", "heart"], stickers=["scientist3", "flask", "magnifier", "atom"]),
+    dict(id="riset-squad", name="Riset Squad", layout="sq4", bg=("#ffe38a", "#fff8dc"), accent="#ffb800", ui="#ffb800",
+         title="RISET SQUAD", sub="Tim peneliti kualitas udara", tsize=100, tcol=WHITE, tstroke="#b86e00", dots="#fff0b0", subcol="#7a4600",
+         hero=[("researcher", 120, 105, 62), ("scientist3", 1080, 105, 62)],
+         scatter=["clipboard", "magnifier", "sparkle_y", "star", "drop", "cloud_nf", "heart"], stickers=["researcher", "clipboard", "robot2", "magnifier"]),
+    dict(id="dokter-udara", name="Dokter Udara", layout="strip4", bg=("#ffb6c8", "#fff0f4"), accent="#ff6f91", ui="#ff6f91",
+         title="DR. UDARA", sub="Cek napas sehat", tsize=70, tcol=WHITE, tstroke="#c2335c", dots="#ffd9e3", subcol="#8a1f42",
+         hero=[("doctor", 56, 88, 46), ("lungs", 546, 86, 40)],
+         scatter=["heart", "sparkle", "drop", "cloud_nf", "lungs", "bubble"], stickers=["doctor2", "lungs", "heart", "doctor"]),
+    dict(id="airbot", name="AirBot Sensor", layout="r5", bg=("#ffc994", "#fff1e0"), accent="#ff8a2b", ui="#ff8a2b",
+         title="AIRBOT SENSOR", sub="Robot pemantau kualitas udara", tsize=96, tcol=WHITE, tstroke="#b34a00", dots="#ffe2c4", subcol="#7a3a00",
+         hero=[("robot", 150, 235, 72), ("robot2", 1050, 235, 72)],
+         scatter=["sparkle_y", "star", "cloud_nf", "drop", "molecule", "sparkle"], stickers=["robot2", "cloud", "robot", "magnifier"]),
+    dict(id="smog-fighter", name="Smog Fighter", layout="sq3", bg=("#ff9f9f", "#ffe8e4"), accent="#ff5c5c", ui="#ff5c5c",
+         title="SMOG FIGHTER", sub="Lawan polusi, hirup bersih!", tsize=100, tcol=WHITE, tstroke="#a32323", dots="#ffd0cb", subcol="#7a1616",
+         hero=[("smog", 120, 100, 62), ("shield", 1080, 100, 62)],
+         scatter=["star", "sparkle", "sparkle_y", "drop", "heart", "leaf"], stickers=["scientist2", "smog", "mask", "shield"]),
+    dict(id="bumi-sehat", name="Bumi Sehat", layout="r3", bg=("#9be0ff", "#c9f5c0"), accent="#3cb878", ui="#3cb878",
+         title="BUMI SEHAT", sub="Jaga bumi, jaga napas kita", tsize=120, tcol=WHITE, tstroke="#1f7a52", dots="#e8fbe3", subcol="#14553a",
+         hero=[("earth", 150, 150, 88), ("tree", 1050, 150, 88)],
+         scatter=["leaf", "leaf2", "sparkle", "drop", "flower", "cloud_nf", "bubble"], stickers=["earth", "scientist3", "tree", "flower"]),
+    dict(id="pelangi-lab", name="Pelangi Lab", layout="sq5", bg=("#ffd6f0", "#e0f4ff"), accent="#c084fc", ui="#c084fc",
+         title="PELANGI LAB", sub="Seru belajar udara bersih", tsize=100, tcol=WHITE, tstroke="#7a3fb8", dots=WHITE, subcol="#5b2d91",
+         hero=[("scientist", 115, 100, 60), ("robot", 1085, 100, 60)],
+         scatter=["sparkle", "star", "heart", "flask_p", "bubble", "sparkle_y", "flower"], stickers=["scientist2", "robot", "doctor", "scientist3", "flask"]),
+    dict(id="labcoat-club", name="Lab Coat Club", layout="strip3", bg=("#7b8cff", "#d9deff"), accent="#4f5fe0", ui="#4f5fe0",
+         title="LAB COAT", sub="Club Peneliti Muda", tsize=92, tcol=WHITE, tstroke="#232d8f", dots="#c3caff", subcol="#232d8f",
+         hero=[("scientist", 78, 62, 46), ("researcher", 522, 62, 46)],
+         scatter=["sparkle", "star", "flask", "atom", "heart", "bubble"], stickers=["scientist2", "doctor", "scientist3"]),
 ]
 
 
@@ -597,7 +788,7 @@ def build(t):
                 ox = step / 2 if j % 2 else 0
                 q.circ(i * step + ox, j * step, 7, fill=t["dots"])
 
-    pl = Placer(slots, W, H, seed=hash(t["id"]) % 1000 + len(t["id"]))
+    pl = Placer(slots, W, H, seed=zlib.crc32(t["id"].encode()) % 100000)
     if t["id"] == "aqhi-rainbow":
         rainbow(p, 150, 300, 150, 9)
         rainbow(p, 1050, 300, 150, 9)
@@ -610,10 +801,10 @@ def build(t):
     # judul
     ty = {"strip3": 150, "strip4": 105, "r3": 165, "r4": 160, "r5": 130, "sq3": 92, "sq4": 92, "sq5": 86}[t["layout"]]
     if t["layout"] in ("r3",):
-        title(p, W / 2, ty, t["title"], t["tsize"] * 0.74, t["tcol"], t["tstroke"], t["sub"], 36, 85)
+        title(p, W / 2, ty, t["title"], t["tsize"] * 0.74, t["tcol"], t["tstroke"], t["sub"], 36, 85, sub_col=t.get("subcol", NAVY))
     else:
         sub_size = 28 if W == 600 else 38
-        title(p, W / 2, ty, t["title"], t["tsize"], t["tcol"], t["tstroke"], t["sub"], sub_size, 70 if W == 600 else (72 if H == 1200 else 90))
+        title(p, W / 2, ty, t["title"], t["tsize"], t["tcol"], t["tstroke"], t["sub"], sub_size, 70 if W == 600 else (72 if H == 1200 else 90), sub_col=t.get("subcol", NAVY))
         # judul yang tidak muat lebar strip diperkecil di bawah
 
     sub_off = 70 if W == 600 else (85 if t["layout"] == "r3" else (72 if H == 1200 else 90))
@@ -642,7 +833,10 @@ def build(t):
         y = s["y"] + s["h"] * (0.1 if i % 2 == 0 else 0.9)
         tape_col = rng.choice(["#ffd84a", "#ff9bb8", "#8fe3ff", "#aef0c8"])
         tape(p, s["x"] + s["w"] * (0.2 if i % 2 else 0.8), s["y"] - 12, 110 if W > 600 else 80, 30 if W > 600 else 22, rng.choice([-8, 7, -4, 9]), tape_col)
-        ICONS[t["stickers"][i % len(t["stickers"])]](p, x, y, r)
+        kind = t["stickers"][i % len(t["stickers"])]
+        rr_ = int(r * 1.3) if kind in CHARS else r
+        x = min(max(x, rr_ * 0.9 + 4), W - rr_ * 0.9 - 4)
+        ICONS[kind](p, x, y, rr_)
 
     # skala AQHI
     bx, by, bw, bh = lay["bar"]
